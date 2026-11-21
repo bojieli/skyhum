@@ -1,0 +1,65 @@
+{
+ "cmd": "train",
+ "out": "v3",
+ "bg": [
+  "pool_bg2_bal.npy:0.55",
+  "pool_v1.npy:0.25"
+ ],
+ "cat_w": "pool_bg2_cats.json",
+ "real": "a2o_train.npy",
+ "real_bg_w": 0.2,
+ "p_realpos": 0.15,
+ "p_realneg": 0.08,
+ "neg_w": 0.3,
+ "codec_p": 0.5,
+ "real_loc_w": 1.0,
+ "codec_dir": "codec_synth",
+ "p_codec": 0.2,
+ "codec_exclude": [
+  "a2o"
+ ],
+ "aug": 1.0,
+ "arch": {
+  "kind": "v1",
+  "width": 48,
+  "ctx": true
+ },
+ "width": 48,
+ "no_ctx": false,
+ "init": null,
+ "bf16": false,
+ "steps": 30000,
+ "batch": 48,
+ "workers": 10,
+ "lr": 0.002,
+ "warm": 0.05,
+ "cfg": {
+  "bg_pools": [
+   [
+    "pool_bg2_bal.npy",
+    0.55
+   ],
+   [
+    "pool_v1.npy",
+    0.25
+   ]
+  ],
+  "real": "a2o_train.npy",
+  "p_realpos": 0.15,
+  "p_realneg": 0.08,
+  "neg_w": 0.3,
+  "codec_p": 0.5,
+  "real_bg_w": 0.2,
+  "cat_w": {
+   "traffic": 0.15,
+   "weather_water": 0.15,
+   "indoor": 0.13,
+   "speech_crowd": 0.12,
+   "machinery": 0.14,
+   "nature": 0.12,
+   "music": 0.04,
+   "quiet": 0.08,
+   "other": 0.07
+  }
+ }
+}

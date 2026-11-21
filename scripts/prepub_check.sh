@@ -43,9 +43,27 @@ fail=0; warn=0
 bad() { echo "FAIL  $*"; fail=$((fail + 1)); }
 note() { echo "WARN  $*"; warn=$((warn + 1)); }
 
+SUMS=src/skyhum/models/SHA256SUMS
 while IFS= read -r f; do
   [ -z "$f" ] && continue
   lf=$(printf '%s' "$f" | tr '[:upper:]' '[:lower:]')
+  case "$f" in
+    src/skyhum/models/*)
+      rel=${f#src/skyhum/models/}
+      case "$rel" in
+        SHA256SUMS|*.md|__init__.py) ;;
+        *)
+          want=$(grep "  $rel\$" "$SUMS" 2>/dev/null | cut -d' ' -f1)
+          have=$(cd src/skyhum/models && sha256sum "$rel" | cut -d' ' -f1)
+          if [ -z "$want" ]; then bad "model file not listed in $SUMS: $f"
+          elif [ "$want" != "$have" ]; then bad "checksum mismatch: $f"; fi
+          case "$lf" in *.pkl|*.pickle|*.joblib) bad "pickle model: $f" ;; esac
+          size=$(wc -c < "$f" | tr -d ' ')
+          if [ "$size" -gt $((25 * 1024 * 1024)) ]; then bad "model over 25 MB: $f"; fi
+          continue ;;
+      esac ;;
+    tests/data/*.npz) continue ;;
+  esac
   if printf '%s' "$lf" | grep -Eq "$MEDIA_RE"; then bad "audio/video file: $f"; fi
   if printf '%s' "$lf" | grep -Eq "$WEIGHT_RE"; then bad "weights, data dump or archive: $f"; fi
   if printf '%s' "$f" | grep -Eq "$ENV_RE" && [ "$f" != ".env.example" ]; then bad ".env file: $f"; fi

@@ -40,7 +40,7 @@ version = { attr = "skyhum.__version__" }
 where = ["src"]
 
 [tool.setuptools.package-data]
-skyhum = ["data/*.json", "data/r5b/*.json", "_vendor/afg/LICENSE"]   # data/r5b/*.json: not in git yet
+skyhum = ["data/*.json", "_vendor/afg/LICENSE", "models/SHA256SUMS", "models/*.md", "models/*/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

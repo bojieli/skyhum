@@ -53,6 +53,6 @@ dist/
 .ruff_cache/
 .coverage
 
-# fitted r5b tables and model weights: not published yet
-src/skyhum/data/r5b/*.json
-*.weights
+# shipped models are listed in src/skyhum/models/SHA256SUMS
+!src/skyhum/models/**
+!tests/data/*.npz

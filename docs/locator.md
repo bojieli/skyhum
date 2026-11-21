@@ -20,10 +20,8 @@ Round 5b replaced the earlier vote counting with calibrated evidence:
 
 ## Fitted tables
 
-The locator needs two fitted tables, `k3_full.json` (per-pass LLR and f0 prior) and `env_full.json` (envelope).
-They are not in the public repository yet: they were fitted on labelled recordings, and the licences of some of
-those recordings (CC BY-NC-ND) are still being reviewed. Without them `--matcher auto` falls back to the reference
-matcher. With them, set `SKYHUM_R5B_MODELS=/path/to/dir`.
+`k3_full.json` (per-pass LLR and f0 prior) and `env_full.json` (envelope) ship in `src/skyhum/models/r5b/`.
+Their fitting set and licences are in the [model card](../src/skyhum/models/MODEL_CARD.md).
 
 ## How the package uses it
 
@@ -57,14 +55,12 @@ positive hours from 7 site clusters. Top-1 within 2 km:
 | Known to 30 s | 23 | 31 |
 
 - The cluster-bootstrap confidence intervals overlap (only 7 site clusters).
-- The no-box (wide) mode reached only 9 positives before the run was stopped: not a result. The wide mode is not in
-  the package.
+- The no-box (wide) mode reached only 9 positives before the run was stopped: not a result.
 - **Not run:** the clock decoys of the main test, the decoys of the single-event hard and negative hours, and the
   multi-session test. So the false-fix rate (how often a decoy-beating answer is wrong) and the calibration of the
   strict threshold are unmeasured. `verify` and `find` say so in their output.
 
 ## Not in the package
 
-Per the release scope (ADR 0001): the wide, no-box country-scale mode, CBSA metro clustering, the whole-country
-search, the multi-session country scoring and the queue, rented-host and vast scripts. The `--area` cap of 100 km
-is enforced in code before anything runs.
+The queue, rented-host and vast scripts used to run the research evaluations. Every evaluation has a local runner
+instead (see REPRODUCING.md).

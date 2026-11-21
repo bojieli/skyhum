@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Removed the `find` gate (`--research`, `--attest`, the 100 km area cap and the local log); the README and ETHICS
+  state the intended use instead.
+- Ship the research models: detector v3 weights, the round-5b fitted tables, and the loud-event classifier as
+  numpy tree arrays (no pickle), with SHA256SUMS and a model card listing every training source and licence.
+
 ## 0.1.0-alpha (first public release)
 
 - Licence MIT. Third-party notices added. The fitted round-5b tables are not published yet; `--matcher auto`

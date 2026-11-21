@@ -24,12 +24,12 @@ def _model(name):
     d = os.environ.get("SKYHUM_R5B_MODELS")
     if d:
         return os.path.join(d, name)
-    return str(resources.files("skyhum.data.r5b").joinpath(name))
+    return str(resources.files("skyhum.models").joinpath("r5b", name))
 
 
 def models_available():
-    """The fitted round-5b tables (per-pass LLR, f0 prior, envelope). They are not in the public repository yet;
-    point SKYHUM_R5B_MODELS at a directory holding them."""
+    """The fitted round-5b tables (per-pass LLR, f0 prior, envelope), shipped in skyhum/models/r5b.
+    SKYHUM_R5B_MODELS points at another directory holding the same files."""
     return all(os.path.isfile(_model(n)) for n in MODEL_FILES)
 
 

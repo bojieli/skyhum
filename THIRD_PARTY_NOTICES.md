@@ -25,3 +25,13 @@ skyhum ships no recordings and no flight data. Results you produce with these so
 - **Copernicus GLO-30 DEM** (only if you supply terrain tiles with `--dem-dir`): produced using Copernicus WorldDEM-30
   (c) DLR e.V. 2010-2014 and (c) Airbus Defence and Space GmbH 2014-2018, provided under COPERNICUS by the European
   Union and ESA; licence terms at the Copernicus DEM distribution site.
+
+## Models trained on third-party data
+
+The shipped models (`src/skyhum/models/`) were trained or fitted on: A2O (CC BY 4.0); xeno-canto (163 background
+recordings: 135 CC BY-NC-SA 4.0, 28 CC BY-NC-ND; plus 100 dev hours under their own licences); AudioSet (labels
+CC BY 4.0, audio from YouTube under YouTube's terms; 70,613 segment uses); Freesound (13,508 uses, including CC BY-NC
+and Sampling+); FSD50K (8,899 uses); TAU Urban Acoustic Scenes 2019 (554 uses, academic-use licence); WHAM! (CC BY-NC
+4.0); SONYC-UST and MUSAN (CC BY 4.0); colsto's YouTube video; and public airport and city webcam livestreams on
+YouTube. The maintainers treat training as non-derivative use; users are responsible for their own use. Details in
+`src/skyhum/models/MODEL_CARD.md`.
