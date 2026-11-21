@@ -15,8 +15,8 @@ V, ...) are the ids of the project's findings table; section names are the artic
     one-hour A2O sensor recordings, 13 same-sensor groups, the clock given to the search, decoy days and labelled pass
     times) and `a2o_box_v1.json` (76 A2O hours of the held-out box test). Download each recording from its `url`
     (Australian Acoustic Observatory, CC BY 4.0).
-  * *Saved outputs bundle*: the research locator outputs for the A2O and public-webcam units, with their truth files
-    (published separately; it holds no event or speech unit). It lets you rescore without a GPU.
+  * *Saved outputs bundle*: the research locator outputs for the A2O, public-webcam and the 6 xeno-canto box units,
+    with their truth files (published separately; it holds no event or speech unit). It lets you rescore without a GPU.
   * *ADS-B*: adsb.lol daily releases (ODbL 1.0), fetched by `skyhum adsb fetch --country`.
   * *Static tables*: `skyhum country static` downloads the US Census CBSA 2023 / county files, the ABS SA4 2021
     boundaries and AWS terrain tiles and builds the region rasters (bit-identical to the research build).
@@ -34,9 +34,8 @@ V, ...) are the ids of the project's findings table; section names are the artic
   * *Needs live call accounts*: the rows that went through real Google Meet, Telegram, Zoom or FaceTime calls.
   * *Not ported*: the measurement came from a research workstream whose code is not in this package yet.
 * **Saved outputs bundle** (`skyhum-saved-outputs-v1`, published separately): every A2O and public-webcam unit of the
-  country, loud-channel, call, box, decoy, single-event and multi-session runs, with truth files and cases; no event,
-  speech or xeno-canto item. Where a row also counted xeno-canto hours (some box controls and hard hours), the bundle
-  gives the counts stated in the row.
+  country, loud-channel, call, box, decoy, single-event and multi-session runs, with truth files and cases, plus the
+  6 xeno-canto items of the box test (public recordings); no event or speech item.
 * **Runtime** is measured from the research run logs (sum of per-group search time on one data-centre GPU) unless
   marked *est.*. Rescoring takes CPU minutes. CPU searches are much slower than GPU ones; docs/locate.md gives the
   measured CPU/GPU ratio for one group.
@@ -110,10 +109,10 @@ ported scorers; on the research outputs (all 93 cases) each table is identical t
 | row | what | command | third party today | runtime | compare with | bundle gives |
 |---|---|---|---|---|---|---|
 | r5b main | 43 positive hours, top-1 within 2 km | `--reproduce box --outputs O --cases C --tag r5b_test --ref-tag v3final_v2j --decoy` | Yes (rescore) | rerun: 3.6 GPU-h (blind, clk30m, clk30s) | blind 22 (51 %, CI 26-67 %), clk30m 23 (53 %), clk30s 31 (72 %, CI 48-87 %), wide 19 (44 %) | identical |
-| r5b decoys clk30s | 20 clock decoys per hour, p ≤ 0.05 | `--reproduce gate --outputs O --cases C` | Yes (rescore) | decoys: 3,683-run plan with early stop | 50 confident, 34 within 2 km (68 %, CI 36-87 %); 9 of 43 positive hours confidently wrong; 1 of 12 empty hours answered | 34/50 identical; positives 35 confident, 26 / 9 identical; empty hours 1 of 9 (the 3 xeno-canto empty hours are not in the bundle) |
-| r5b decoys clk30m | same | same | Yes (rescore) | in the above | 25 of 49 (51 %) | 25 of 48 (one confident-wrong xeno-canto hour is not in the bundle) |
-| r5b single event | clk5s, p ≤ 0.05 | `--reproduce single-event` and `--reproduce gate` | Partly (see A17f) | 3.6 GPU-h decoys | 22 confident, 14 correct, 8 wrong (21 % false fixes on 38 hard hours) | 21 confident, 14 / 7 (one xeno-canto hour missing) |
-| r5b margins | p ≤ 0.05 plus margin ≥ 2 / 4 / 8 | `--reproduce gate` | Yes (rescore) | – | no margin gives usable precision: 68-73 % at clk30s (7 site clusters) | clk30s rows identical except the empty-hour column (9 not 12 hours) |
+| r5b decoys clk30s | 20 clock decoys per hour, p ≤ 0.05 | `--reproduce gate --outputs O --cases C` | Yes (rescore) | decoys: 3,683-run plan with early stop | 50 confident, 34 within 2 km (68 %, CI 36-87 %); 9 of 43 positive hours confidently wrong; 1 of 12 empty hours answered | identical |
+| r5b decoys clk30m | same | same | Yes (rescore) | in the above | 25 of 49 (51 %) | identical |
+| r5b single event | clk5s, p ≤ 0.05 | `--reproduce single-event` and `--reproduce gate` | Yes (rescore) | 3.6 GPU-h decoys | 22 confident, 14 correct, 8 wrong (21 % false fixes on 38 hard hours) | identical |
+| r5b margins | p ≤ 0.05 plus margin ≥ 2 / 4 / 8 | `--reproduce gate` | Yes (rescore) | – | no margin gives usable precision: 68-73 % at clk30s (7 site clusters) | identical |
 | r5b multi-session | same-sensor sets, N = 1 / 4 / 8 | `--reproduce multi-session --outputs O --plan box/ms_plan.json` | Yes (rescore; A2O only) | – | blind 10 % → 24 % → 52 %; clk30s 15 % → 47 % → 67 %; pooled confidence unmeasured | identical |
 | r5b real world | false-fix run on 634 recordings | – | Pending (running in the research code); events and speech items in it are not reproducible by design | – | pending | – |
 
@@ -121,8 +120,8 @@ ported scorers; on the research outputs (all 93 cases) each table is identical t
 
 | row | what | command | inputs | third party today | runtime | compare with |
 |---|---|---|---|---|---|---|
-| A17d | single event, two-point answer, 38 hard hours | `--reproduce single-event --outputs O --cases C --tag r5b_se` | box manifest; bundle | Partly: the bundle holds 35 of the 38 hard hours (33 A2O, 2 webcam; the 3 xeno-canto hours are not in it, all three misses), so it gives 24/35 | 0.4 GPU-h; decoys 3.6 GPU-h | 24/38 within 2 km |
-| A17f | same, with clock decoys (p ≤ 0.05) | same | same + decoy outputs | Partly: from the bundle, hard 21 confident, 14 / 7 (one confident-wrong xeno-canto hour is not in it); positives 33, 26 / 7 exactly; negatives 1 wrong of 8 answered | in A17d | hard 22 confident, 14 / 8; positives 33, 26 / 7; negatives 1 wrong of 9; all 40/56 |
+| A17d | single event, two-point answer, 38 hard hours | `--reproduce single-event --outputs O --cases C --tag r5b_se` | box manifest; bundle | Yes (rescore from the bundle); a rerun covers the 33 A2O hard hours (2 webcam hours need webcam features, the 3 xeno-canto hours are not in the A2O manifest) | 0.4 GPU-h; decoys 3.6 GPU-h | 24/38 within 2 km |
+| A17f | same, with clock decoys (p ≤ 0.05) | same | same + decoy outputs | Yes (rescore from the bundle) | in A17d | hard 22 confident, 14 / 8; positives 33, 26 / 7; negatives 1 wrong of 9; all 40/56 |
 | A13, A13m, A14, A15 | loud single pass / hour | loud channel (ported separately) | – | Not ported here | – | as published |
 | A16, A16c | range terms | not ported (ranging workstream) | – | Not ported | – | as published |
 | A19 | upstream comparison | not ported | – | Not ported | – | 7/8 within 1 km |

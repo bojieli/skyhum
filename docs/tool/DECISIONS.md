@@ -12,3 +12,4 @@ Decisions taken while preparing the public repository, with the reason. Owner de
 | 2026-11-21 | Whole-country search ships as `skyhum locate --country`, not the default (owner) | `verify` and `audit` stay the front door; every result prints the base rate |
 | 2026-11-21 | Webcam audio is released only as derived features (owner); event and speech livestreams are never released | Livestreams cannot be re-fetched; events and speech could identify private individuals |
 | 2026-11-22 | Feature set 3 (30-400 Hz magnitude spectrograms, 2 s loudness curves) approved for release (owner); wider sets wait for an intelligibility test and the owner's go | Speech-band features need evidence, not reasoning, that speech cannot be recovered |
+| 2026-11-22 | Saved-outputs bundle includes the 6 xeno-canto box items | Public recordings, not event, speech or private streams; needed for exact reproduction of A17d/A17f/clk30m |
