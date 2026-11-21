@@ -170,10 +170,11 @@ def build_parser():
                       parents=[common], formatter_class=Formatter)
     q.add_argument("--source", required=True)
     q.add_argument("--n", type=int, default=20)
-    q = bs.add_parser("run", help="score saved results and print the tier table (not in this build)",
+    q = bs.add_parser("run", help="rerun or rescore a family of published rows (REPRODUCING.md)",
                       parents=[common], formatter_class=Formatter)
-    q.add_argument("--tier", default="all")
-    q.add_argument("--reproduce", choices=["paper"])
+    from skyhum.country import cli as country_cli
+    country_cli.add_bench_run_args(q)
+    country_cli.add_country(sub, common, Formatter, EPILOG)
 
     p = cmd("adsb", "download and index ADS-B history for an area and dates")
     as_ = p.add_subparsers(dest="adsb_cmd", metavar="ACTION")
@@ -566,7 +567,13 @@ def cmd_bench(args, out):
         return finish(args, out, "bench list", dict(sources=SOURCES), E.OK)
     if args.bench_cmd == "fetch":
         raise E.NotImplementedInBuild("bench fetch", "catalogue licence review pending (docs/bench.md)")
-    raise E.NotImplementedInBuild("bench run", "scoring and table reproduction are planned for phase P4")
+    from skyhum.country import cli as country_cli
+    return finish(args, out, "bench run", country_cli.cmd_bench_run(args, out, workdir(args)), E.OK)
+
+
+def cmd_country(args, out):
+    from skyhum.country import cli as country_cli
+    return finish(args, out, "country", country_cli.cmd_country(args, out, workdir(args)), E.OK)
 
 
 def cmd_adsb(args, out):
@@ -574,7 +581,7 @@ def cmd_adsb(args, out):
 
 
 COMMANDS = dict(selftest=cmd_selftest, doctor=cmd_doctor, regions=cmd_regions, detect=cmd_detect, verify=cmd_verify,
-                audit=cmd_audit, scrub=cmd_scrub, find=cmd_find, bench=cmd_bench, adsb=cmd_adsb)
+                audit=cmd_audit, scrub=cmd_scrub, find=cmd_find, bench=cmd_bench, adsb=cmd_adsb, country=cmd_country)
 
 
 def main(argv=None):

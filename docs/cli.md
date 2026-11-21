@@ -20,6 +20,8 @@ positional arguments:
     scrub                   remove the clue: low-band gate in pauses, or tone scrubbing
     find                    rank places inside a supplied area (research and validation)
     bench                   public benchmark: sources (links and metadata), fetch, scoring
+    country                 country search: static tables and the scorers (score, prior, claims) of
+                            search outputs
     adsb                    download and index ADS-B history for an area and dates
 
 options:
@@ -448,7 +450,7 @@ positional arguments:
   ACTION
     list                    list sources with licences
     fetch                   download recordings from the original host (not in this build)
-    run                     score saved results and print the tier table (not in this build)
+    run                     rerun or rescore a family of published rows (REPRODUCING.md)
 
 options:
   -h, --help                show this help message and exit
@@ -505,7 +507,58 @@ options:
 
 ```text
 usage: skyhum bench run [-h] [--device {auto,cpu,cuda}] [--workdir DIR] [--json] [-q] [-v]
-                        [--tier TIER] [--reproduce {paper}]
+                        [--reproduce FAMILY] [--set {a2o,webcam}] [--jobs JOBS] [--manifest FILE]
+                        [--audio-dir DIR] [--hints-dir DIR] [--spec-dir DIR] [--outputs DIR]
+                        [--truth FILE] [--cases FILE] [--static DIR] [--channel CHANNEL]
+                        [--calls-runs DIR] [--calls-truth FILE] [--tag TAG] [--ref-tag REF_TAG]
+                        [--decoy] [--adsb-dir DIR] [--country-root DIR]
+
+options:
+  -h, --help                 show this help message and exit
+  --device {auto,cpu,cuda}   device for the r5b locator: auto, cpu or cuda (default: auto; cpu never
+                             touches a GPU)
+  --workdir DIR              working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
+  --json                     print one JSON document to stdout
+  -q, --quiet                print only the result line
+  -v, --verbose              print progress to stderr
+  --reproduce FAMILY         row family to rerun or rescore: country, prior, verify, box, single-
+                             event (REPRODUCING.md)
+  --set {a2o,webcam}         benchmark set (default: a2o; webcam needs the webcam feature release)
+  --jobs JOBS                searches in parallel (default: 1)
+  --manifest FILE            a manifest other than the shipped one (feature releases)
+  --audio-dir DIR            rerun: recordings named <item id>.<ext>
+  --hints-dir DIR            rerun: detector-v3 detections <item id>.json
+  --spec-dir DIR             rerun: spectrograms <item id>.npz instead of audio
+  --outputs DIR, --runs DIR  rescore: existing locator outputs (yours or the published ones) instead
+                             of searching
+  --truth FILE               rescore (country families): truth.json of --outputs
+  --cases FILE               rescore (box families): cases JSON of --outputs (default: the shipped
+                             A2O manifest)
+  --static DIR               static tables (default: WORKDIR/country/static)
+  --channel CHANNEL          country score channel (default: s2, tonal)
+  --calls-runs DIR           verify: outputs of the same search on call audio
+  --calls-truth FILE         verify: truth of --calls-runs
+  --tag TAG                  box families: tag of the runs (default: r5b_test / r5b_se)
+  --ref-tag REF_TAG          box: a second tag scored on the same cases (e.g. the round-5a locator)
+  --decoy                    box: use the clock-decoy runs (<runs>/<tag>__decoy)
+  --adsb-dir DIR             box rerun: low-altitude ADS-B day files
+  --country-root DIR         country work directory (default: WORKDIR/country)
+```
+
+## skyhum country
+
+```text
+usage: skyhum country [-h] [--device {auto,cpu,cuda}] [--workdir DIR] [--json] [-q] [-v] ACTION ...
+
+positional arguments:
+  ACTION
+    static                  download the public boundary / population / terrain files and build the
+                            region rasters
+    score                   score search outputs: region top-1, tiers, decoy confidence, multi-
+                            session
+    prior                   fuse with population / UTC-offset priors; value of the sound given a
+                            prior
+    claims                  verify claimed places (true and false claims) from search outputs
 
 options:
   -h, --help                show this help message and exit
@@ -515,8 +568,119 @@ options:
   --json                    print one JSON document to stdout
   -q, --quiet               print only the result line
   -v, --verbose             print progress to stderr
-  --tier TIER
-  --reproduce {paper}
+
+exit codes:
+  0   success (verify: SUPPORTED)        10  UNCORROBORATED (not proof the claim is false)
+  11  INCONCLUSIVE (too little to test)  2   usage error, or not implemented in this build
+  3   missing data (ADS-B, input file)
+  1   selftest failed or internal error
+
+Audio never leaves this machine. See docs/ for concepts, limits and responsible use.
+```
+
+### skyhum country static
+
+```text
+usage: skyhum country static [-h] [--device {auto,cpu,cuda}] [--workdir DIR] [--json] [-q] [-v]
+                             [--country-root DIR] [--country {US,AU,both}] [--raw DIR]
+
+download the public boundary / population / terrain files and build the region rasters
+
+options:
+  -h, --help                show this help message and exit
+  --device {auto,cpu,cuda}  device for the r5b locator: auto, cpu or cuda (default: auto; cpu never
+                            touches a GPU)
+  --workdir DIR             working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
+  --json                    print one JSON document to stdout
+  -q, --quiet               print only the result line
+  -v, --verbose             print progress to stderr
+  --country-root DIR        country work directory (default: WORKDIR/country)
+  --country {US,AU,both}
+  --raw DIR                 use already downloaded public files from DIR
+```
+
+### skyhum country score
+
+```text
+usage: skyhum country score [-h] [--device {auto,cpu,cuda}] [--workdir DIR] [--json] [-q] [-v]
+                            [--country-root DIR] --truth TRUTH [--static DIR] --out PATH
+                            [--channel CHANNEL]
+                            runs
+
+score search outputs: region top-1, tiers, decoy confidence, multi-session
+
+positional arguments:
+  runs                      directory of search outputs (*.json)
+
+options:
+  -h, --help                show this help message and exit
+  --device {auto,cpu,cuda}  device for the r5b locator: auto, cpu or cuda (default: auto; cpu never
+                            touches a GPU)
+  --workdir DIR             working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
+  --json                    print one JSON document to stdout
+  -q, --quiet               print only the result line
+  -v, --verbose             print progress to stderr
+  --country-root DIR        country work directory (default: WORKDIR/country)
+  --truth TRUTH             truth.json the runs were staged with
+  --static DIR              static tables (default: ROOT/static)
+  --out PATH                output prefix (score) or directory
+  --channel CHANNEL         score channel: s2 tonal (default), l_s2, c1_s2
+```
+
+### skyhum country prior
+
+```text
+usage: skyhum country prior [-h] [--device {auto,cpu,cuda}] [--workdir DIR] [--json] [-q] [-v]
+                            [--country-root DIR] --truth TRUTH [--static DIR] --out PATH
+                            runs
+
+fuse with population / UTC-offset priors; value of the sound given a prior
+
+positional arguments:
+  runs                      directory of search outputs (*.json)
+
+options:
+  -h, --help                show this help message and exit
+  --device {auto,cpu,cuda}  device for the r5b locator: auto, cpu or cuda (default: auto; cpu never
+                            touches a GPU)
+  --workdir DIR             working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
+  --json                    print one JSON document to stdout
+  -q, --quiet               print only the result line
+  -v, --verbose             print progress to stderr
+  --country-root DIR        country work directory (default: WORKDIR/country)
+  --truth TRUTH             truth.json the runs were staged with
+  --static DIR              static tables (default: ROOT/static)
+  --out PATH                output prefix (score) or directory
+```
+
+### skyhum country claims
+
+```text
+usage: skyhum country claims [-h] [--device {auto,cpu,cuda}] [--workdir DIR] [--json] [-q] [-v]
+                             [--country-root DIR] --truth TRUTH [--static DIR] --out PATH
+                             [--channel CHANNEL] [--calls-runs DIR] [--calls-truth FILE]
+                             runs
+
+verify claimed places (true and false claims) from search outputs
+
+positional arguments:
+  runs                      directory of search outputs (*.json)
+
+options:
+  -h, --help                show this help message and exit
+  --device {auto,cpu,cuda}  device for the r5b locator: auto, cpu or cuda (default: auto; cpu never
+                            touches a GPU)
+  --workdir DIR             working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
+  --json                    print one JSON document to stdout
+  -q, --quiet               print only the result line
+  -v, --verbose             print progress to stderr
+  --country-root DIR        country work directory (default: WORKDIR/country)
+  --truth TRUTH             truth.json the runs were staged with
+  --static DIR              static tables (default: ROOT/static)
+  --out PATH                output prefix (score) or directory
+  --channel CHANNEL         score channel: s2 tonal (default), l_s2, c1_s2
+  --calls-runs DIR          outputs of the same search on call audio
+  --calls-truth FILE
 ```
 
 ## skyhum adsb
