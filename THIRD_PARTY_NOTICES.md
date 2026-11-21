@@ -22,6 +22,14 @@ skyhum ships no recordings and no flight data. Results you produce with these so
   benchmark: CC BY 4.0. Attribute the Australian Acoustic Observatory when you use or publish them.
 - **xeno-canto** and **Freesound** recordings, referenced by link only: each recording keeps its own Creative
   Commons licence (several are NonCommercial or NoDerivatives).
+- **Country search tables** (`skyhum country static`, downloaded at run time, not shipped): US Census Bureau
+  cartographic boundary files (CBSA and county, 2023), CBSA population estimates 2023 and 2020 county centres of
+  population (US public domain); ABS ASGS Edition 3 SA4 2021 boundaries (CC BY 4.0, Australian Bureau of Statistics);
+  AWS Terrain Tiles (open data, see the tile provider's attribution list).
+- **ABS Estimated Resident Population 2021 by SA4** (`src/skyhum/country/data/abs_erp_sa4_2021.csv`, from the ABS Data
+  API, dataflow ABS_ANNUAL_ERP_ASGS2021): CC BY 4.0, Australian Bureau of Statistics. Shipped.
+- **A2O benchmark manifests** (`src/skyhum/bench/manifests/`): metadata of Australian Acoustic Observatory recordings
+  (CC BY 4.0); the labelled pass times were derived with adsb.lol data (ODbL 1.0).
 - **Copernicus GLO-30 DEM** (only if you supply terrain tiles with `--dem-dir`): produced using Copernicus WorldDEM-30
   (c) DLR e.V. 2010-2014 and (c) Airbus Defence and Space GmbH 2014-2018, provided under COPERNICUS by the European
   Union and ESA; licence terms at the Copernicus DEM distribution site.
