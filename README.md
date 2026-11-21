@@ -50,7 +50,9 @@ it is never a precision. See [Limits](#limits) and [docs/locator.md](docs/locato
 | `verify` | working with r5b (default) or the reference matcher; clock windows up to ±30 min; you supply the ADS-B file |
 | `audit` | working, except the exposure tier, which is not computed yet |
 | `find` | r5b ranking; confidence not calibrated (about 2 in 3 confident answers within 2 km) |
-| `bench list` | working; `bench fetch` and `bench run` are not in this build |
+| `bench list` | working; `bench fetch` is not in this build |
+| `bench run --reproduce FAMILY` | working for rescoring locator outputs (`--outputs DIR`): families `country`, `prior`, `verify`, `box`, `single-event`; rerunning the searches is not in this build yet. See [REPRODUCING.md](REPRODUCING.md) |
+| `country static`, `country score / prior / claims` | working: the region rasters (public Census / ABS files) and the scorers of the whole-country search ([docs/locate.md](docs/locate.md)) |
 | `adsb fetch`, `--adsb auto` | not in this build: download ADS-B days yourself ([docs/data.md](docs/data.md)) |
 
 Anything not in this build exits with code 2 and says so.

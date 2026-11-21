@@ -62,3 +62,11 @@ Round 5a, same 43 hours, within 2 km: blind 15, clock to 30 min 19, clock to 30 
 
 The queue, rented-host and vast scripts used to run the research evaluations. Every evaluation has a local runner
 instead (see REPRODUCING.md).
+
+## Country search and the benchmark scorers
+
+The whole-country search ("which US metro / Australian SA4?") reuses the round-5b per-pass LLR with country-wide
+candidate generation; see [locate.md](locate.md). The box benchmark scorers (round-5b tables and the single-event
+two-point mode) are `skyhum bench run --reproduce box` and `--reproduce single-event`; on the saved research outputs
+they reproduce the published round-5b numbers exactly ([REPRODUCING.md](../REPRODUCING.md)).
+
