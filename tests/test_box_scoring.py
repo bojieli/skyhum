@@ -2,6 +2,7 @@
 import json
 import os
 
+import numpy as np
 import pytest
 
 
@@ -54,3 +55,32 @@ def test_single_event_mirror_and_decoys(box):
     assert r["e1"] == pytest.approx(2.2, abs=0.05) and r["e2"] < 0.05
     assert summ["hard"]["e2"][:3] == [1, 1, 1] and summ["hard"]["e1"][2] == 0
     assert summ["hard"]["confident"] == 1 and summ["hard"]["correct"] == 1
+
+
+def test_gate_table_counts_confident_answers(box):
+    from skyhum.bench import r5b_eval
+    cases, runs = box
+    for k in range(20):                       # 20 low decoys: p1 reaches p = 1/21 <= 0.05
+        write(f"{runs}/T__decoy", f"p1.clk30s.c{k + 2000:+d}", [hyp(-30.3, 150.3, 1.0)])
+    md, out = r5b_eval.gate_table(cases, runs, "T", ("clk30s",))
+    g = out["clk30s"]["p <= 0.05"]
+    assert g["confident"] == 1 and g["correct"] == 1 and g["pos"] == 1
+    assert out["clk30s"]["p <= 0.05 & margin >= 8"]["confident"] == 0          # margin 9 - 2 = 7
+    assert "1/1 = 1.00" in md
+
+
+def test_multi_session_sums_maps(tmp_path):
+    from skyhum.bench import r5b_eval
+    runs = tmp_path / "runs"
+    d = runs / "MS"
+    d.mkdir(parents=True)
+    lats, lons = np.array([-30.0, -30.1]), np.array([150.0, 150.1])
+    # hour a votes for the true cell (0, 0) weakly; hour b strongly for a wrong cell alone (1 voter); summed, the true
+    # cell wins because only it has >= 2 voters
+    for h, sc, nv in (("a", [[3.0, 0.0], [0.0, 0.0]], [[1, 0], [0, 0]]),
+                      ("b", [[2.0, 0.0], [0.0, 9.0]], [[1, 0], [0, 1]])):
+        np.savez(d / f"{h}.clk30s.grid.npz", score0=np.ravel(sc), n0=np.ravel(nv), lats=lats, lons=lons)
+    plan = dict(hours={"a": dict(lat=-30.0, lon=150.0), "b": dict(lat=-30.0, lon=150.0)},
+                sets=[dict(site=1, N=2, hours=["a", "b"])])
+    md, rows = r5b_eval.multi_session(plan, str(runs), "MS", modes=("clk30s",))
+    assert rows[0]["ok"] and rows[0]["top"] == 5.0 and "| clk30s | 2 | 1 | 1 | 100% |" in md

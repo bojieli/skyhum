@@ -512,8 +512,8 @@ usage: skyhum bench run [-h] [--device {auto,cpu,cuda}] [--workdir DIR] [--json]
                         [--reproduce FAMILY] [--set {a2o,webcam}] [--jobs JOBS] [--manifest FILE]
                         [--audio-dir DIR] [--hints-dir DIR] [--spec-dir DIR] [--outputs DIR]
                         [--truth FILE] [--cases FILE] [--static DIR] [--channel CHANNEL]
-                        [--calls-runs DIR] [--calls-truth FILE] [--tag TAG] [--ref-tag REF_TAG]
-                        [--decoy] [--adsb-dir DIR] [--country-root DIR]
+                        [--calls-runs DIR] [--calls-truth FILE] [--tag TAG] [--plan FILE]
+                        [--ref-tag REF_TAG] [--decoy] [--adsb-dir DIR] [--country-root DIR]
 
 options:
   -h, --help                 show this help message and exit
@@ -524,7 +524,7 @@ options:
   -q, --quiet                print only the result line
   -v, --verbose              print progress to stderr
   --reproduce FAMILY         row family to rerun or rescore: country, prior, verify, box, single-
-                             event (REPRODUCING.md)
+                             event, gate, multi-session (REPRODUCING.md)
   --set {a2o,webcam}         benchmark set (default: a2o; webcam needs the webcam feature release)
   --jobs JOBS                searches in parallel (default: 1)
   --manifest FILE            a manifest other than the shipped one (feature releases)
@@ -540,7 +540,8 @@ options:
   --channel CHANNEL          country score channel (default: s2, tonal)
   --calls-runs DIR           verify: outputs of the same search on call audio
   --calls-truth FILE         verify: truth of --calls-runs
-  --tag TAG                  box families: tag of the runs (default: r5b_test / r5b_se)
+  --tag TAG                  box families: tag of the runs (default: r5b_test / r5b_se / r5b_ms)
+  --plan FILE                multi-session: the set plan of the outputs
   --ref-tag REF_TAG          box: a second tag scored on the same cases (e.g. the round-5a locator)
   --decoy                    box: use the clock-decoy runs (<runs>/<tag>__decoy)
   --adsb-dir DIR             box rerun: low-altitude ADS-B day files

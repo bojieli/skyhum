@@ -6,7 +6,9 @@ Families
   prior         region score x population / UTC-offset prior, the sound given a prior (A3t, A10, A11; B3p, B8-B9)
   verify        verifying a claimed place (section V; A12, B10)
   box           round-5b locator in a jittered 0.25 deg box, date / +-30 min / +-30 s clocks (A17, A17b, A17c)
-  single-event  round-5b single-event two-point mode at +-5 s (A17d; A17f needs the decoy runs, see below)
+  single-event  round-5b single-event two-point mode at +-5 s (A17d, A17f with the decoy runs)
+  gate          round-5b decoy-gate calibration (confident answers at p <= 0.05 and margins; clk30s, clk30m, clk5s)
+  multi-session round-5b multi-session sets (N = 1 / 2 / 4 / 8 / 16 hours of one sensor; rescore only)
 
 Two ways to run each family:
   rescore  --outputs DIR (and --truth FILE / --cases FILE): score search outputs you already have (yours, or saved
@@ -30,6 +32,8 @@ FAMILIES = {
     "verify": "verify a claimed place (metro / 40 km box / 5 km), true and false claims",
     "box": "round-5b locator in a jittered box (date / +-30 min / +-30 s)",
     "single-event": "round-5b single-event two-point mode (+-5 s)",
+    "gate": "round-5b decoy-gate calibration (p <= 0.05, + margins) for the box and single-event tests",
+    "multi-session": "round-5b same-sensor sets of N hours on a shared box (summed maps, pooled decoys)",
 }
 COUNTRY_FAMILIES = ("country", "prior", "verify")
 MANIFEST = {("country", "a2o"): "a2o_country_v1.json", ("box", "a2o"): "a2o_box_v1.json"}
@@ -142,6 +146,27 @@ def _box(fam, args, out, workdir, res_dir):
                       start_true=it["start_true_utc"], npos=it.get("npos"), source="a2o", split="test")
                  for it in M["items"]]
     runs = args.runs
+    if fam in ("gate", "multi-session") and not runs:
+        raise E.NotImplementedInBuild(f"rerunning --reproduce {fam}", "pass --outputs DIR (the saved outputs bundle)")
+    if fam == "gate":
+        md1, s1 = r5b_eval.gate_table(cases, runs, args.tag or "r5b_test", ("clk30s", "clk30m"))
+        md2, s2 = r5b_eval.gate_table(cases, runs, "r5b_se", ("clk5s",), se=True)
+        p = os.path.join(res_dir, "gate.md")
+        with open(p, "w") as f:
+            f.write(md1 + "\n" + md2)
+        out.line(md1 + "\n" + md2)
+        return dict(family=fam, tables=p, summary=dict(main=s1, single_event=s2))
+    if fam == "multi-session":
+        if not args.plan:
+            raise E.UsageError("--reproduce multi-session needs --plan FILE (the set plan of the saved outputs)")
+        with open(args.plan) as f:
+            plan = json.load(f)
+        md, _ = r5b_eval.multi_session(plan, runs, args.tag or "r5b_ms")
+        p = os.path.join(res_dir, "multi-session.md")
+        with open(p, "w") as f:
+            f.write(md)
+        out.line(md)
+        return dict(family=fam, tables=p)
     tag = args.tag or ("r5b_se" if fam == "single-event" else "r5b_test")
     if not runs:
         try:
