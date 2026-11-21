@@ -175,13 +175,15 @@ def build_parser():
     from skyhum.country import cli as country_cli
     country_cli.add_bench_run_args(q)
     country_cli.add_country(sub, common, Formatter, EPILOG)
+    country_cli.add_locate(sub, common, Formatter, EPILOG)
 
     p = cmd("adsb", "download and index ADS-B history for an area and dates")
     as_ = p.add_subparsers(dest="adsb_cmd", metavar="ACTION")
-    q = as_.add_parser("fetch", help="download ADS-B days (not in this build)", parents=[common],
-                       formatter_class=Formatter)
-    q.add_argument("--area", required=True, metavar="PLACE")
+    q = as_.add_parser("fetch", help="download adsb.lol days and cut them to a country's low traffic (resumable)",
+                       parents=[common], formatter_class=Formatter)
+    q.add_argument("--area", metavar="PLACE", help="an area instead of a country (not in this build)")
     q.add_argument("--date", required=True, action="append", metavar="YYYY-MM-DD")
+    country_cli.add_adsb_fetch_args(q)
     return ap
 
 
@@ -577,11 +579,20 @@ def cmd_country(args, out):
 
 
 def cmd_adsb(args, out):
-    raise E.NotImplementedInBuild("adsb fetch", "download ADS-B days yourself (docs/data.md) and pass --adsb PATH")
+    from skyhum.country import cli as country_cli
+    if getattr(args, "adsb_cmd", None) != "fetch" or not args.country:
+        raise E.NotImplementedInBuild("adsb fetch --area", "use --country US|AU (whole adsb.lol days, docs/locate.md)")
+    return finish(args, out, "adsb fetch", country_cli.cmd_adsb_fetch(args, out, workdir(args)), E.OK)
+
+
+def cmd_locate(args, out):
+    from skyhum.country import cli as country_cli
+    return finish(args, out, "locate", country_cli.cmd_locate(args, out, workdir(args)), E.OK)
 
 
 COMMANDS = dict(selftest=cmd_selftest, doctor=cmd_doctor, regions=cmd_regions, detect=cmd_detect, verify=cmd_verify,
-                audit=cmd_audit, scrub=cmd_scrub, find=cmd_find, bench=cmd_bench, adsb=cmd_adsb, country=cmd_country)
+                audit=cmd_audit, scrub=cmd_scrub, find=cmd_find, bench=cmd_bench, adsb=cmd_adsb, country=cmd_country,
+                locate=cmd_locate)
 
 
 def main(argv=None):
