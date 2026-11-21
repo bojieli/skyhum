@@ -1,0 +1,58 @@
+# secrets
+.env
+*.env
+.env.*
+!.env.example
+secrets/
+
+# audio and video: never commit recordings
+*.wav
+*.wave
+*.mp3
+*.flac
+*.ogg
+*.opus
+*.m4a
+*.aac
+*.aif
+*.aiff
+*.caf
+*.webm
+*.mp4
+*.mkv
+*.mov
+
+# data, weights, archives
+*.npz
+*.npy
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.pkl
+*.h5
+*.parquet
+*.tar
+*.tar.*
+*.zip
+work/
+runs/
+data/raw/
+demo/
+skyhum-find.log
+
+# python
+.venv/
+venv/
+__pycache__/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.coverage
+
+# fitted r5b tables and model weights: not published yet
+src/skyhum/data/r5b/*.json
+*.weights

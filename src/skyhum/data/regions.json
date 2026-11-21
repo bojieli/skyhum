@@ -1,0 +1,20 @@
+{
+  "_note": "Approximate rectangles (west, south, east, north in degrees), each at most 100 km across. They are coarse stand-ins for metro areas, not official boundaries. For an exact area pass @file.geojson.",
+  "regions": [
+    {"name": "San Francisco Bay Area", "aliases": ["bay area", "sf bay area"], "country": "US", "bbox": [-122.55, 37.25, -121.75, 38.05]},
+    {"name": "Los Angeles basin", "aliases": ["la basin", "los angeles"], "country": "US", "bbox": [-118.67, 33.70, -117.75, 34.35]},
+    {"name": "New York metro", "aliases": ["new york", "nyc"], "country": "US", "bbox": [-74.35, 40.45, -73.40, 41.10]},
+    {"name": "Seattle area", "aliases": ["seattle"], "country": "US", "bbox": [-122.50, 47.35, -122.00, 47.85]},
+    {"name": "Chicago area", "aliases": ["chicago"], "country": "US", "bbox": [-88.10, 41.60, -87.50, 42.20]},
+    {"name": "Boston area", "aliases": ["boston"], "country": "US", "bbox": [-71.35, 42.20, -70.90, 42.55]},
+    {"name": "Washington DC area", "aliases": ["washington dc", "dc"], "country": "US", "bbox": [-77.35, 38.70, -76.85, 39.10]},
+    {"name": "Phoenix area", "aliases": ["phoenix"], "country": "US", "bbox": [-112.35, 33.25, -111.65, 33.75]},
+    {"name": "Houston area", "aliases": ["houston"], "country": "US", "bbox": [-95.75, 29.50, -95.05, 30.10]},
+    {"name": "Dallas-Fort Worth", "aliases": ["dfw", "dallas"], "country": "US", "bbox": [-97.55, 32.55, -96.55, 33.15]},
+    {"name": "Miami area", "aliases": ["miami"], "country": "US", "bbox": [-80.45, 25.55, -80.05, 26.35]},
+    {"name": "London", "aliases": ["greater london"], "country": "GB", "bbox": [-0.55, 51.30, 0.30, 51.70]},
+    {"name": "Sydney", "aliases": [], "country": "AU", "bbox": [150.70, -34.10, 151.35, -33.55]},
+    {"name": "Melbourne", "aliases": [], "country": "AU", "bbox": [144.65, -38.10, 145.35, -37.60]},
+    {"name": "Brisbane", "aliases": [], "country": "AU", "bbox": [152.75, -27.70, 153.25, -27.20]}
+  ]
+}

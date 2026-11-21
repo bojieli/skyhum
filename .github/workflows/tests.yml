@@ -1,0 +1,35 @@
+name: tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+      - name: install (CPU-only PyTorch for the r5b locator)
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -e ".[dev,plot]"
+      - name: selftest
+        env:
+          SKYHUM_NO_GPU_PROBE: "1"
+        run: skyhum --device cpu selftest
+        timeout-minutes: 30
+      - name: pytest (includes the slow r5b tests on CPU)
+        env:
+          SKYHUM_DEVICE: cpu
+        run: pytest -q
+        timeout-minutes: 60

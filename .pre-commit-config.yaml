@@ -1,0 +1,22 @@
+# pre-commit install    (hooks use tools from your environment; nothing is downloaded)
+repos:
+  - repo: local
+    hooks:
+      - id: prepub-check
+        name: no audio, weights, big files or key-like strings
+        entry: scripts/prepub_check.sh --staged
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: ruff
+        name: ruff
+        entry: ruff check
+        language: system
+        types: [python]
+        exclude: ^third_party/
+      - id: cli-docs
+        name: docs/cli.md is current
+        entry: python scripts/gen_cli_docs.py --check
+        language: system
+        pass_filenames: false
+        files: ^(src/skyhum/cli\.py|docs/cli\.md)$
