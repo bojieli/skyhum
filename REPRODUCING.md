@@ -33,6 +33,10 @@ V, ...) are the ids of the project's findings table; section names are the artic
     streams that could identify or locate a private individual) are left out of every public manifest and bundle.
   * *Needs live call accounts*: the rows that went through real Google Meet, Telegram, Zoom or FaceTime calls.
   * *Not ported*: the measurement came from a research workstream whose code is not in this package yet.
+* **Saved outputs bundle** (`skyhum-saved-outputs-v1`, published separately): every A2O and public-webcam unit of the
+  country, loud-channel, call, box, decoy, single-event and multi-session runs, with truth files and cases; no event,
+  speech or xeno-canto item. Where a row also counted xeno-canto hours (some box controls and hard hours), the bundle
+  gives the counts stated in the row.
 * **Runtime** is measured from the research run logs (sum of per-group search time on one data-centre GPU) unless
   marked *est.*. Rescoring takes CPU minutes. CPU searches are much slower than GPU ones; docs/locate.md gives the
   measured CPU/GPU ratio for one group.
@@ -95,6 +99,23 @@ The webcam part of the summary (7/110) is reproducible once the webcam feature r
 | A7-A9 | round-5a locator, same box | same command (the `v3final_v2j` rows) | same | Yes (rescore); a rerun needs the round-5a locator, not in the package | 14.7 GPU-h | 15/43, 19/43, 23/43; tiers as published |
 | A1 | ±1° box, date only | not ported | – | Not ported | – | as published |
 | B1, C1, D1 | date only, country | – | – | not measured | – | – |
+
+## Round-5b locator: final test, decoy check and multi-session
+
+These numbers are the round-5b test as finalised after the article (the round-5b results of the research code). The
+confidence they describe is **not calibrated: about 2 in 3 confident answers within 2 km on a 7-cluster test**; it is
+not a precision. Blind and wide have no decoy check. Every row below rescores from the saved outputs bundle with the
+ported scorers; on the research outputs (all 93 cases) each table is identical to the research scorer's.
+
+| row | what | command | third party today | runtime | compare with | bundle gives |
+|---|---|---|---|---|---|---|
+| r5b main | 43 positive hours, top-1 within 2 km | `--reproduce box --outputs O --cases C --tag r5b_test --ref-tag v3final_v2j --decoy` | Yes (rescore) | rerun: 3.6 GPU-h (blind, clk30m, clk30s) | blind 22 (51 %, CI 26-67 %), clk30m 23 (53 %), clk30s 31 (72 %, CI 48-87 %), wide 19 (44 %) | identical |
+| r5b decoys clk30s | 20 clock decoys per hour, p ≤ 0.05 | `--reproduce gate --outputs O --cases C` | Yes (rescore) | decoys: 3,683-run plan with early stop | 50 confident, 34 within 2 km (68 %, CI 36-87 %); 9 of 43 positive hours confidently wrong; 1 of 12 empty hours answered | 34/50 identical; positives 35 confident, 26 / 9 identical; empty hours 1 of 9 (the 3 xeno-canto empty hours are not in the bundle) |
+| r5b decoys clk30m | same | same | Yes (rescore) | in the above | 25 of 49 (51 %) | 25 of 48 (one confident-wrong xeno-canto hour is not in the bundle) |
+| r5b single event | clk5s, p ≤ 0.05 | `--reproduce single-event` and `--reproduce gate` | Partly (see A17f) | 3.6 GPU-h decoys | 22 confident, 14 correct, 8 wrong (21 % false fixes on 38 hard hours) | 21 confident, 14 / 7 (one xeno-canto hour missing) |
+| r5b margins | p ≤ 0.05 plus margin ≥ 2 / 4 / 8 | `--reproduce gate` | Yes (rescore) | – | no margin gives usable precision: 68-73 % at clk30s (7 site clusters) | clk30s rows identical except the empty-hour column (9 not 12 hours) |
+| r5b multi-session | same-sensor sets, N = 1 / 4 / 8 | `--reproduce multi-session --outputs O --plan box/ms_plan.json` | Yes (rescore; A2O only) | – | blind 10 % → 24 % → 52 %; clk30s 15 % → 47 % → 67 %; pooled confidence unmeasured | identical |
+| r5b real world | false-fix run on 634 recordings | – | Pending (running in the research code); events and speech items in it are not reproducible by design | – | pending | – |
 
 ## Article section: "A single detected close pass can land within a kilometre"
 

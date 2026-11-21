@@ -44,6 +44,8 @@ row to its family, inputs and the number to compare against.
 | `verify` | verifying a claimed place | same; needs timezonefinder |
 | `box` | round-5b in a jittered box, three clocks | `--outputs`, `--cases`, `--tag`, `--ref-tag` |
 | `single-event` | two-point single-event answers with decoys | `--outputs`, `--cases`, `--tag` |
+| `gate` | decoy-gate calibration (p <= 0.05 and margins), main test and single event | `--outputs`, `--cases` |
+| `multi-session` | same-sensor sets of N hours on a shared box | `--outputs`, `--plan` |
 
 ## Status
 
