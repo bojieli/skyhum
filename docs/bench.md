@@ -1,7 +1,10 @@
 # Benchmark
 
 The benchmark is a set of public recordings with a known place and start time, each paired with the ADS-B day for
-its area. The repository holds **links and metadata only**: no audio, no derived audio features.
+its area. The repository holds **links and metadata only**, never audio. For the public webcam hours behind the
+published webcam rows, derived features (magnitude spectrograms and level curves, no audio) are prepared as release
+assets, not repository files. [DATA_CARD.md](../DATA_CARD.md) describes them, and
+`src/skyhum/data/webcam_features.json` lists the hours.
 
 ## Sources
 

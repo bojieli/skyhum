@@ -42,6 +42,18 @@ class Session:
         LOC.write_spec(x, self.path, fs)
         self.dur = x.size / fs
 
+    @classmethod
+    def from_features(cls, path, tmpdir):
+        """A session from a released tonal feature file (skyhum.bench.features) instead of audio."""
+        from skyhum.bench import features as F
+        item = F.load(path)
+        if F.SETS[item["header"]["set"]]["kind"] != "tonal":
+            raise ValueError(f"{path}: not a tonal feature file")
+        self = cls.__new__(cls)
+        self.path = F.locator_spec(item, os.path.join(tmpdir, f"spec{id(self)}.npz"))
+        self.dur = float(item["header"]["duration_s"])
+        return self
+
 
 def _passes(h):
     out = []

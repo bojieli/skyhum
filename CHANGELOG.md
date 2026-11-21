@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Webcam feature release format: `skyhum.bench.features` computes, writes and reads derived, magnitude-only
+  features of webcam audio (locator spectrogram rows up to 400 or 620 Hz, loud-channel band levels and 2 s level
+  curves). `Session.from_features` runs the locator on them instead of audio. The hour list is in
+  `data/webcam_features.json` and the format, exclusions and fidelity checks in DATA_CARD.md. The feature files
+  themselves are release assets, not repository files.
 - Removed the `find` gate (`--research`, `--attest`, the 100 km area cap and the local log); the README and ETHICS
   state the intended use instead.
 - Ship the research models: detector v3 weights, the round-5b fitted tables, and the loud-event classifier as
