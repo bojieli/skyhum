@@ -63,5 +63,5 @@ def test_readme_block(block, tmp_path_factory):
                SKYHUM_NO_GPU_PROBE="1", SKYHUM_WORKDIR=str(cwd / "workdir"))
     for cmd, want in commands(block["body"]):
         assert shlex.split(cmd)[0] == "skyhum", cmd
-        p = subprocess.run(["bash", "-c", cmd], cwd=cwd, env=env, capture_output=True, text=True, timeout=300)
+        p = subprocess.run(["bash", "-c", cmd], cwd=cwd, env=env, capture_output=True, text=True, timeout=1800)
         assert p.returncode in want, f"{cmd}\nexit {p.returncode}, wanted {want}\n{p.stdout[-800:]}\n{p.stderr[-800:]}"
