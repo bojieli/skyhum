@@ -19,6 +19,8 @@ calls leak and check whether a fix works.
 
 It runs locally. Audio never leaves your machine.
 
+**Paper / article:** https://x.com/bojie_li/status/2124169630596137359
+
 > **Read this first.** A blind one-hour search names the right region for about 5% of public recordings. The
 > risk comes from repeated sessions from one spot (rural Australian sensors reached 93% with eight sessions) and
 > from a listener who already has a guess. An `UNCORROBORATED` result is not proof you are safe. See
@@ -115,6 +117,13 @@ verdict          SUPPORTED  (default operating point)
 why              the claim beats every decoy (5 decoy clocks)
 not tested       indoor attenuation, speech overlap, platform processing
 ```
+
+## Reproducing the article
+
+Every number in the article (https://x.com/bojie_li/status/2124169630596137359) is meant to be checkable with this repository: the models it used ship in
+`src/skyhum/models/`, and a reproduction guide with one command per published row is being added (`REPRODUCING.md`,
+`skyhum bench run --reproduce`). Rows built on event and speech livestreams are not reproducible by third parties by
+design: those recordings could identify private individuals and are not published in any form.
 
 ## With your own recordings
 

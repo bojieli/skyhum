@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use skyhum, please cite the software and the article."
+title: "skyhum: does your audio say where you were?"
+type: software
+authors:
+  - family-names: Li
+    given-names: Bojie
+repository-code: "https://github.com/bojieli/skyhum"
+license: MIT
+version: 0.1.0-alpha
+date-released: 2026-11-21
+references:
+  - type: article
+    title: "skyhum article"
+    authors:
+      - family-names: Li
+        given-names: Bojie
+    url: "https://x.com/bojie_li/status/2124169630596137359"
