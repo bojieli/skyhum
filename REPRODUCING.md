@@ -89,7 +89,7 @@ The webcam part of the summary (7/110) is reproducible once the webcam feature r
 
 | row | what | command | inputs | third party today | runtime | compare with |
 |---|---|---|---|---|---|---|
-| A17 | round-5b locator, jittered 0.25° box, date only | `skyhum bench run --reproduce box --outputs O --cases C --tag r5b_test --ref-tag v3final_v2j` | box manifest (A2O part); bundle | Yes (rescore) for 38 A2O of 43 positives; the 5 webcam positives need webcam features | rerun: 3.6 GPU-h (all three clocks, 93 cases) | ≤ 2 km 22/43; tiers 1 / 4 / 16 / 22 / 26 / 29 |
+| A17 | round-5b locator, jittered 0.25° box, date only | `skyhum bench run --reproduce box --outputs O --cases C --tag r5b_test --ref-tag v3final_v2j` | box manifest (A2O part); bundle (all 43 positives: 38 A2O, 5 webcam) | Yes (rescore); a rerun covers the 38 A2O positives, the 5 webcam positives need webcam features | rerun: 3.6 GPU-h (all three clocks, 93 cases) | ≤ 2 km 22/43; tiers 1 / 4 / 16 / 22 / 26 / 29 |
 | A17b | same, ±30 min | same | same | same | in A17 | 23/43; 1 / 6 / 18 / 23 / 30 / 33 |
 | A17c | same, ±30 s | same | same | same | in A17 | 31/43; ≤ 1 km 24/43; 1 / 5 / 24 / 31 / 40 / 42 |
 | A7-A9 | round-5a locator, same box | same command (the `v3final_v2j` rows) | same | Yes (rescore); a rerun needs the round-5a locator, not in the package | 14.7 GPU-h | 15/43, 19/43, 23/43; tiers as published |
@@ -100,8 +100,8 @@ The webcam part of the summary (7/110) is reproducible once the webcam feature r
 
 | row | what | command | inputs | third party today | runtime | compare with |
 |---|---|---|---|---|---|---|
-| A17d | single event, two-point answer, 38 hard hours | `--reproduce single-event --outputs O --cases C --tag r5b_se` | box manifest; bundle | Yes (rescore) for the A2O hard hours; webcam (2) and xeno-canto (3) hard hours are not in the A2O manifest | 0.4 GPU-h; decoys 3.6 GPU-h | 24/38 within 2 km |
-| A17f | same, with clock decoys (p ≤ 0.05) | same | same + decoy outputs | same | in A17d | hard 22 confident, 14 / 8; positives 33, 26 / 7; negatives 1 wrong of 9; all 40/56 |
+| A17d | single event, two-point answer, 38 hard hours | `--reproduce single-event --outputs O --cases C --tag r5b_se` | box manifest; bundle | Partly: the bundle holds 35 of the 38 hard hours (33 A2O, 2 webcam; the 3 xeno-canto hours are not in it, all three misses), so it gives 24/35 | 0.4 GPU-h; decoys 3.6 GPU-h | 24/38 within 2 km |
+| A17f | same, with clock decoys (p ≤ 0.05) | same | same + decoy outputs | Partly: from the bundle, hard 21 confident, 14 / 7 (one confident-wrong xeno-canto hour is not in it); positives 33, 26 / 7 exactly; negatives 1 wrong of 8 answered | in A17d | hard 22 confident, 14 / 8; positives 33, 26 / 7; negatives 1 wrong of 9; all 40/56 |
 | A13, A13m, A14, A15 | loud single pass / hour | loud channel (ported separately) | – | Not ported here | – | as published |
 | A16, A16c | range terms | not ported (ranging workstream) | – | Not ported | – | as published |
 | A19 | upstream comparison | not ported | – | Not ported | – | 7/8 within 1 km |
