@@ -18,8 +18,7 @@ positional arguments:
     verify                  is the audio consistent with a claimed place and time?
     audit                   you say where you were: how much did the audio give away?
     scrub                   remove the clue: low-band gate in pauses, or tone scrubbing
-    find                    GATED: rank places inside a supplied area (research on own or consented
-                            audio)
+    find                    rank places inside a supplied area (research and validation)
     bench                   public benchmark: sources (links and metadata), fetch, scoring
     adsb                    download and index ADS-B history for an area and dates
 
@@ -28,8 +27,7 @@ options:
   --version                 show program's version number and exit
   --device {auto,cpu,cuda}  device for the r5b locator: auto, cpu or cuda (default: auto; cpu never
                             touches a GPU)
-  --workdir DIR             where downloads and the find log go (default: $SKYHUM_WORKDIR or
-                            ~/.local/share/skyhum)
+  --workdir DIR             working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
   --json                    print one JSON document to stdout
   -q, --quiet               print only the result line
   -v, --verbose             print progress to stderr
@@ -37,7 +35,7 @@ options:
 exit codes:
   0   success (verify: SUPPORTED)        10  UNCORROBORATED (not proof the claim is false)
   11  INCONCLUSIVE (too little to test)  2   usage error, or not implemented in this build
-  3   missing data (ADS-B, input file)   4   refused by the find safety gate
+  3   missing data (ADS-B, input file)
   1   selftest failed or internal error
 
 Audio never leaves this machine. See docs/ for concepts, limits and responsible use.
@@ -55,8 +53,7 @@ options:
   -h, --help                show this help message and exit
   --device {auto,cpu,cuda}  device for the r5b locator: auto, cpu or cuda (default: auto; cpu never
                             touches a GPU)
-  --workdir DIR             where downloads and the find log go (default: $SKYHUM_WORKDIR or
-                            ~/.local/share/skyhum)
+  --workdir DIR             working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
   --json                    print one JSON document to stdout
   -q, --quiet               print only the result line
   -v, --verbose             print progress to stderr
@@ -68,7 +65,7 @@ options:
 exit codes:
   0   success (verify: SUPPORTED)        10  UNCORROBORATED (not proof the claim is false)
   11  INCONCLUSIVE (too little to test)  2   usage error, or not implemented in this build
-  3   missing data (ADS-B, input file)   4   refused by the find safety gate
+  3   missing data (ADS-B, input file)
   1   selftest failed or internal error
 
 Audio never leaves this machine. See docs/ for concepts, limits and responsible use.
@@ -85,8 +82,7 @@ options:
   -h, --help                show this help message and exit
   --device {auto,cpu,cuda}  device for the r5b locator: auto, cpu or cuda (default: auto; cpu never
                             touches a GPU)
-  --workdir DIR             where downloads and the find log go (default: $SKYHUM_WORKDIR or
-                            ~/.local/share/skyhum)
+  --workdir DIR             working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
   --json                    print one JSON document to stdout
   -q, --quiet               print only the result line
   -v, --verbose             print progress to stderr
@@ -94,7 +90,7 @@ options:
 exit codes:
   0   success (verify: SUPPORTED)        10  UNCORROBORATED (not proof the claim is false)
   11  INCONCLUSIVE (too little to test)  2   usage error, or not implemented in this build
-  3   missing data (ADS-B, input file)   4   refused by the find safety gate
+  3   missing data (ADS-B, input file)
   1   selftest failed or internal error
 
 Audio never leaves this machine. See docs/ for concepts, limits and responsible use.
@@ -114,8 +110,7 @@ options:
   -h, --help                show this help message and exit
   --device {auto,cpu,cuda}  device for the r5b locator: auto, cpu or cuda (default: auto; cpu never
                             touches a GPU)
-  --workdir DIR             where downloads and the find log go (default: $SKYHUM_WORKDIR or
-                            ~/.local/share/skyhum)
+  --workdir DIR             working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
   --json                    print one JSON document to stdout
   -q, --quiet               print only the result line
   -v, --verbose             print progress to stderr
@@ -123,7 +118,7 @@ options:
 exit codes:
   0   success (verify: SUPPORTED)        10  UNCORROBORATED (not proof the claim is false)
   11  INCONCLUSIVE (too little to test)  2   usage error, or not implemented in this build
-  3   missing data (ADS-B, input file)   4   refused by the find safety gate
+  3   missing data (ADS-B, input file)
   1   selftest failed or internal error
 
 Audio never leaves this machine. See docs/ for concepts, limits and responsible use.
@@ -147,8 +142,7 @@ options:
   -h, --help                show this help message and exit
   --device {auto,cpu,cuda}  device for the r5b locator: auto, cpu or cuda (default: auto; cpu never
                             touches a GPU)
-  --workdir DIR             where downloads and the find log go (default: $SKYHUM_WORKDIR or
-                            ~/.local/share/skyhum)
+  --workdir DIR             working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
   --json                    print one JSON document to stdout
   -q, --quiet               print only the result line
   -v, --verbose             print progress to stderr
@@ -178,7 +172,7 @@ advanced:
 exit codes:
   0   success (verify: SUPPORTED)        10  UNCORROBORATED (not proof the claim is false)
   11  INCONCLUSIVE (too little to test)  2   usage error, or not implemented in this build
-  3   missing data (ADS-B, input file)   4   refused by the find safety gate
+  3   missing data (ADS-B, input file)
   1   selftest failed or internal error
 
 Audio never leaves this machine. See docs/ for concepts, limits and responsible use.
@@ -204,8 +198,7 @@ options:
   -h, --help                  show this help message and exit
   --device {auto,cpu,cuda}    device for the r5b locator: auto, cpu or cuda (default: auto; cpu
                               never touches a GPU)
-  --workdir DIR               where downloads and the find log go (default: $SKYHUM_WORKDIR or
-                              ~/.local/share/skyhum)
+  --workdir DIR               working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
   --json                      print one JSON document to stdout
   -q, --quiet                 print only the result line
   -v, --verbose               print progress to stderr
@@ -254,7 +247,7 @@ matcher:
 exit codes:
   0   success (verify: SUPPORTED)        10  UNCORROBORATED (not proof the claim is false)
   11  INCONCLUSIVE (too little to test)  2   usage error, or not implemented in this build
-  3   missing data (ADS-B, input file)   4   refused by the find safety gate
+  3   missing data (ADS-B, input file)
   1   selftest failed or internal error
 
 Audio never leaves this machine. See docs/ for concepts, limits and responsible use.
@@ -280,8 +273,7 @@ options:
   -h, --help                  show this help message and exit
   --device {auto,cpu,cuda}    device for the r5b locator: auto, cpu or cuda (default: auto; cpu
                               never touches a GPU)
-  --workdir DIR               where downloads and the find log go (default: $SKYHUM_WORKDIR or
-                              ~/.local/share/skyhum)
+  --workdir DIR               working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
   --json                      print one JSON document to stdout
   -q, --quiet                 print only the result line
   -v, --verbose               print progress to stderr
@@ -328,7 +320,7 @@ matcher:
 exit codes:
   0   success (verify: SUPPORTED)        10  UNCORROBORATED (not proof the claim is false)
   11  INCONCLUSIVE (too little to test)  2   usage error, or not implemented in this build
-  3   missing data (ADS-B, input file)   4   refused by the find safety gate
+  3   missing data (ADS-B, input file)
   1   selftest failed or internal error
 
 Audio never leaves this machine. See docs/ for concepts, limits and responsible use.
@@ -351,8 +343,7 @@ options:
   -h, --help                show this help message and exit
   --device {auto,cpu,cuda}  device for the r5b locator: auto, cpu or cuda (default: auto; cpu never
                             touches a GPU)
-  --workdir DIR             where downloads and the find log go (default: $SKYHUM_WORKDIR or
-                            ~/.local/share/skyhum)
+  --workdir DIR             working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
   --json                    print one JSON document to stdout
   -q, --quiet               print only the result line
   -v, --verbose             print progress to stderr
@@ -364,7 +355,7 @@ options:
 exit codes:
   0   success (verify: SUPPORTED)        10  UNCORROBORATED (not proof the claim is false)
   11  INCONCLUSIVE (too little to test)  2   usage error, or not implemented in this build
-  3   missing data (ADS-B, input file)   4   refused by the find safety gate
+  3   missing data (ADS-B, input file)
   1   selftest failed or internal error
 
 Audio never leaves this machine. See docs/ for concepts, limits and responsible use.
@@ -376,13 +367,12 @@ Audio never leaves this machine. See docs/ for concepts, limits and responsible 
 usage: skyhum find [-h] [--device {auto,cpu,cuda}] [--workdir DIR] [--json] [-q] [-v]
                    [--channel CHANNEL] [--start TIME] [--tz ZONE] [--start-from-file]
                    [--start-tol DUR] [--duration DUR] [--adsb PATH|auto] [--out DIR] [--report FILE]
-                   [--ground-alt M] [--spacing KM] [--seed SEED] --area PLACE [--research]
-                   [--attest WHAT] [--top TOP] [--sessions A,B] [--session-starts T1,T2]
-                   [--single-event] [--matcher {auto,r5b,reference}] [--decoys N] [--fast]
-                   [--dem-dir DIR]
+                   [--ground-alt M] [--spacing KM] [--seed SEED] --area PLACE [--top TOP]
+                   [--sessions A,B] [--session-starts T1,T2] [--single-event]
+                   [--matcher {auto,r5b,reference}] [--decoys N] [--fast] [--dem-dir DIR]
                    AUDIO
 
-Rank candidate places inside one metro or an area at most 100 km across. Refuses (exit 4) without --research and an --attest value, and for larger areas. Every attempt is logged locally. A point estimate is printed only above the strict threshold. Research use: the confidence of the r5b locator is NOT validated (its test did not run the clock decoys), so the strict threshold is an uncalibrated margin. Do not use it to locate private individuals.
+Rank candidate places inside an area you supply. A point estimate is printed only above the strict threshold. The confidence of the r5b locator is NOT validated (its test did not run the clock decoys), so the strict threshold is an uncalibrated margin. For research, validation and defence; not for locating private individuals.
 
 positional arguments:
   AUDIO                       wav, flac, ogg; mp3, m4a, webm need ffmpeg
@@ -391,17 +381,14 @@ options:
   -h, --help                  show this help message and exit
   --device {auto,cpu,cuda}    device for the r5b locator: auto, cpu or cuda (default: auto; cpu
                               never touches a GPU)
-  --workdir DIR               where downloads and the find log go (default: $SKYHUM_WORKDIR or
-                              ~/.local/share/skyhum)
+  --workdir DIR               working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
   --json                      print one JSON document to stdout
   -q, --quiet                 print only the result line
   -v, --verbose               print progress to stderr
   --channel CHANNEL           channel to use, 0-based (default: 0)
-  --area PLACE                search area, at most 100 km across. a place: a named region ("Los
-                              Angeles basin", see `skyhum regions list`), a circle "lat,lon,r=5km",
-                              a box "bbox:west,south,east,north", or "@file.geojson"
-  --research                  required: confirms this is research use
-  --attest WHAT               required: own | consented | public-benchmark
+  --area PLACE                search area. a place: a named region ("Los Angeles basin", see `skyhum
+                              regions list`), a circle "lat,lon,r=5km", a box
+                              "bbox:west,south,east,north", or "@file.geojson"
   --top TOP                   ranked tiles to show (default: 5)
   --sessions A,B              more recordings you state come from the same spot
   --session-starts T1,T2      start times of --sessions, same order
@@ -444,7 +431,7 @@ matcher:
 exit codes:
   0   success (verify: SUPPORTED)        10  UNCORROBORATED (not proof the claim is false)
   11  INCONCLUSIVE (too little to test)  2   usage error, or not implemented in this build
-  3   missing data (ADS-B, input file)   4   refused by the find safety gate
+  3   missing data (ADS-B, input file)
   1   selftest failed or internal error
 
 Audio never leaves this machine. See docs/ for concepts, limits and responsible use.
@@ -467,8 +454,7 @@ options:
   -h, --help                show this help message and exit
   --device {auto,cpu,cuda}  device for the r5b locator: auto, cpu or cuda (default: auto; cpu never
                             touches a GPU)
-  --workdir DIR             where downloads and the find log go (default: $SKYHUM_WORKDIR or
-                            ~/.local/share/skyhum)
+  --workdir DIR             working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
   --json                    print one JSON document to stdout
   -q, --quiet               print only the result line
   -v, --verbose             print progress to stderr
@@ -476,7 +462,7 @@ options:
 exit codes:
   0   success (verify: SUPPORTED)        10  UNCORROBORATED (not proof the claim is false)
   11  INCONCLUSIVE (too little to test)  2   usage error, or not implemented in this build
-  3   missing data (ADS-B, input file)   4   refused by the find safety gate
+  3   missing data (ADS-B, input file)
   1   selftest failed or internal error
 
 Audio never leaves this machine. See docs/ for concepts, limits and responsible use.
@@ -491,8 +477,7 @@ options:
   -h, --help                show this help message and exit
   --device {auto,cpu,cuda}  device for the r5b locator: auto, cpu or cuda (default: auto; cpu never
                             touches a GPU)
-  --workdir DIR             where downloads and the find log go (default: $SKYHUM_WORKDIR or
-                            ~/.local/share/skyhum)
+  --workdir DIR             working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
   --json                    print one JSON document to stdout
   -q, --quiet               print only the result line
   -v, --verbose             print progress to stderr
@@ -508,8 +493,7 @@ options:
   -h, --help                show this help message and exit
   --device {auto,cpu,cuda}  device for the r5b locator: auto, cpu or cuda (default: auto; cpu never
                             touches a GPU)
-  --workdir DIR             where downloads and the find log go (default: $SKYHUM_WORKDIR or
-                            ~/.local/share/skyhum)
+  --workdir DIR             working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
   --json                    print one JSON document to stdout
   -q, --quiet               print only the result line
   -v, --verbose             print progress to stderr
@@ -527,8 +511,7 @@ options:
   -h, --help                show this help message and exit
   --device {auto,cpu,cuda}  device for the r5b locator: auto, cpu or cuda (default: auto; cpu never
                             touches a GPU)
-  --workdir DIR             where downloads and the find log go (default: $SKYHUM_WORKDIR or
-                            ~/.local/share/skyhum)
+  --workdir DIR             working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
   --json                    print one JSON document to stdout
   -q, --quiet               print only the result line
   -v, --verbose             print progress to stderr
@@ -551,8 +534,7 @@ options:
   -h, --help                show this help message and exit
   --device {auto,cpu,cuda}  device for the r5b locator: auto, cpu or cuda (default: auto; cpu never
                             touches a GPU)
-  --workdir DIR             where downloads and the find log go (default: $SKYHUM_WORKDIR or
-                            ~/.local/share/skyhum)
+  --workdir DIR             working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
   --json                    print one JSON document to stdout
   -q, --quiet               print only the result line
   -v, --verbose             print progress to stderr
@@ -560,7 +542,7 @@ options:
 exit codes:
   0   success (verify: SUPPORTED)        10  UNCORROBORATED (not proof the claim is false)
   11  INCONCLUSIVE (too little to test)  2   usage error, or not implemented in this build
-  3   missing data (ADS-B, input file)   4   refused by the find safety gate
+  3   missing data (ADS-B, input file)
   1   selftest failed or internal error
 
 Audio never leaves this machine. See docs/ for concepts, limits and responsible use.
@@ -576,8 +558,7 @@ options:
   -h, --help                show this help message and exit
   --device {auto,cpu,cuda}  device for the r5b locator: auto, cpu or cuda (default: auto; cpu never
                             touches a GPU)
-  --workdir DIR             where downloads and the find log go (default: $SKYHUM_WORKDIR or
-                            ~/.local/share/skyhum)
+  --workdir DIR             working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
   --json                    print one JSON document to stdout
   -q, --quiet               print only the result line
   -v, --verbose             print progress to stderr

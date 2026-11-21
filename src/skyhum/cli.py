@@ -1,7 +1,7 @@
 """skyhum command line.
 
 Exit codes: 0 success (verify: SUPPORTED), 10 UNCORROBORATED, 11 INCONCLUSIVE, 2 usage error or a feature not in
-this build, 3 missing data, 4 refused by the find gate, 1 selftest failure or internal error.
+this build, 3 missing data, 1 selftest failure or internal error.
 """
 import argparse
 import os
@@ -14,7 +14,7 @@ from skyhum.report import document, dumps, write
 EPILOG = """exit codes:
   0   success (verify: SUPPORTED)        10  UNCORROBORATED (not proof the claim is false)
   11  INCONCLUSIVE (too little to test)  2   usage error, or not implemented in this build
-  3   missing data (ADS-B, input file)   4   refused by the find safety gate
+  3   missing data (ADS-B, input file)
   1   selftest failed or internal error
 
 Audio never leaves this machine. See docs/ for concepts, limits and responsible use."""
@@ -34,7 +34,7 @@ def _global_args(p, top):
     p.add_argument("--device", choices=["auto", "cpu", "cuda"], default=d("auto"),
                    help="device for the r5b locator: auto, cpu or cuda (default: auto; cpu never touches a GPU)")
     p.add_argument("--workdir", default=d(None), metavar="DIR",
-                   help="where downloads and the find log go (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)")
+                   help="working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)")
     p.add_argument("--json", action="store_true", default=d(False), help="print one JSON document to stdout")
     p.add_argument("-q", "--quiet", action="store_true", default=d(False), help="print only the result line")
     p.add_argument("-v", "--verbose", action="store_true", default=d(False), help="print progress to stderr")
@@ -149,16 +149,13 @@ def build_parser():
     p.add_argument("--channel", type=int, default=0, help="input channel, 0-based")
     p.add_argument("--seed", type=int, default=0, help="comfort-noise seed")
 
-    p = cmd("find", "GATED: rank places inside a supplied area (research on own or consented audio)",
-            "Rank candidate places inside one metro or an area at most 100 km across. Refuses (exit 4) without "
-            "--research and an --attest value, and for larger areas. Every attempt is logged locally. A point "
-            "estimate is printed only above the strict threshold. Research use: the confidence of the r5b locator "
-            "is NOT validated (its test did not run the clock decoys), so the strict threshold is an uncalibrated "
-            "margin. Do not use it to locate private individuals.")
+    p = cmd("find", "rank places inside a supplied area (research and validation)",
+            "Rank candidate places inside an area you supply. A point estimate is printed only above the strict "
+            "threshold. The confidence of the r5b locator is NOT validated (its test did not run the clock decoys), "
+            "so the strict threshold is an uncalibrated margin. For research, validation and defence; not for "
+            "locating private individuals.")
     _audio_args(p)
-    p.add_argument("--area", required=True, metavar="PLACE", help="search area, at most 100 km across. " + PLACE_HELP)
-    p.add_argument("--research", action="store_true", help="required: confirms this is research use")
-    p.add_argument("--attest", metavar="WHAT", help="required: own | consented | public-benchmark")
+    p.add_argument("--area", required=True, metavar="PLACE", help="search area. " + PLACE_HELP)
     p.add_argument("--top", type=int, default=5, help="ranked tiles to show (default: 5)")
     p.add_argument("--sessions", metavar="A,B", help="more recordings you state come from the same spot")
     p.add_argument("--session-starts", metavar="T1,T2", help="start times of --sessions, same order")
@@ -501,11 +498,7 @@ def cmd_scrub(args, out):
 
 def cmd_find(args, out):
     from skyhum.io.regions import parse_place
-    from skyhum.safety import gate
     area = parse_place(args.area)
-    paths = [args.audio] + ([s for s in args.sessions.split(",") if s] if args.sessions else [])
-    log = gate.check(research=args.research, attest=args.attest, area=area, audio_paths=paths, workdir=workdir(args))
-    out.warn(f"find: research use attested as '{args.attest}', logged to {log}")
     check_device(args, out)
     from skyhum.io import audio as A
     from skyhum.io.adsb import Tracks
@@ -540,7 +533,6 @@ def cmd_find(args, out):
         r = F.run([(logspec(xs, 16000), l, h) for xs, l, h in sessions], tracks, area, top=args.top,
                   n_decoys=n_decoys(args, 200), seed=args.seed, spacing_km=args.spacing, ground_m=args.ground_alt,
                   progress=out.progress("find"))
-    r["attest"], r["log"] = args.attest, log
     rows = [("find", os.path.basename(args.audio) + (f" + {len(sessions) - 1} session(s)" if len(sessions) > 1
                                                       else "")),
             ("area", f"{area.label} ({area.extent_km():.0f} km across)"),

@@ -58,7 +58,7 @@ def test_r5b_verify_true_and_displaced(run_cli, demo):
 @needs_models
 def test_r5b_find_gate_and_output(run_cli, demo):
     code, out, err = run_cli("find", fx(demo, "clip.wav"), "--adsb", fx(demo, "tracks.npz"), "--start", START,
-                             "--area", f"{SITE},r=3km", "--research", "--attest", "own", "--fast", "--decoys", "5")
+                             "--area", f"{SITE},r=3km", "--fast", "--decoys", "5")
     assert code in (0, 10) and "not validated" in out + err
     if code == 10:
         assert "no point estimate" in out

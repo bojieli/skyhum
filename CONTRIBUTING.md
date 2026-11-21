@@ -26,8 +26,8 @@ python scripts/gen_cli_docs.py   # if you changed any command or flag
   synthetic tracks at run time. Benchmark catalogues hold links and metadata only.
 - **No secrets.** API keys belong in your environment, never in the repository.
 - **Numbers in docs need a source.** Do not add accuracy figures without the evaluation that produced them.
-- **Scope.** Contributions that widen `find` (larger areas, country-wide search, multi-region joint scoring) or
-  weaken the gate will not be merged. See [docs/ETHICS.md](docs/ETHICS.md).
+- **Scope.** Keep every result honest about its limits; see [docs/ETHICS.md](docs/ETHICS.md). Contributions that hide
+  or soften a limit statement will not be merged.
 - Keep output honest: a new result type must state what was not tested.
 
 ## Style

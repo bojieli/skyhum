@@ -4,7 +4,7 @@ OK = 0            # success; for verify: SUPPORTED
 FAILED = 1        # selftest failed or an internal error
 USAGE = 2         # bad arguments, or a feature not implemented in this build
 MISSING_DATA = 3  # ADS-B, weights or another input the command needs is not available
-REFUSED = 4       # the find safety gate refused the request
+REFUSED = 4       # reserved (no longer used)
 UNCORROBORATED = 10
 INCONCLUSIVE = 11
 

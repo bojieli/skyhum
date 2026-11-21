@@ -3,7 +3,7 @@
 ## What leaves the machine
 
 In this build: nothing. skyhum makes no network requests. Audio is decoded in memory, and reports are written
-only where you ask. The `find` log is a local file (`<workdir>/skyhum-find.log`).
+only where you ask.
 
 When automatic ADS-B download is added (`--adsb auto`, `skyhum adsb fetch`), it will download day files from the
 ADS-B archive. Those requests reveal the date and, through the files chosen, the rough area you are interested in.

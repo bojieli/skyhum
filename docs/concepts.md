@@ -55,8 +55,8 @@ the real window. A rival place given with `--versus` is one more decoy.
 `audit` runs the checks from your side: you say where you were, and it reports what was detectable, whether the
 true place would be corroborated, and whether a place 15 km away would pass too.
 
-`find` turns the question around: which cells inside a given area fit best? It is gated (see
-[ETHICS.md](ETHICS.md)) and capped at 100 km across, and it prints a point estimate only above the strict
+`find` turns the question around: which cells inside a given area fit best? It prints a point estimate only above
+the strict
 threshold.
 
 ## The matcher in this build

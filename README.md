@@ -14,7 +14,8 @@ calls leak and check whether a fix works.
 - **Verify**: is this audio consistent with a place and time someone claims?
 - **Audit**: you know where you were; how much did the audio give away, and does scrubbing help?
 - **Scrub**: remove the clue before you share.
-- **Find** (gated): rank places inside an area you supply, for research on your own or consented audio.
+- **Find**: rank places inside an area you supply (research and validation).
+- **Locate** (`skyhum locate --country US|AU`, coming in this release series): the whole-country search used for the write-up, so every number can be checked. Not the default.
 
 It runs locally. Audio never leaves your machine.
 
@@ -31,9 +32,9 @@ default when available). It runs on a GPU when there is one and falls back to th
 minutes for a short clip, far longer for an hour of audio. A simplified numpy matcher is kept as
 `--matcher reference` for quick checks; it has not been benchmarked.
 
-**The fitted round-5b tables are not in this repository yet** (they are derived from labelled recordings whose
-licences are still being reviewed). Without them, `--matcher auto` (the default) uses the reference matcher and
-says so; `--matcher r5b` exits with code 3. If you have the tables, point `SKYHUM_R5B_MODELS` at their directory.
+The research models ship in `src/skyhum/models/` (detector v3, the round-5b fitted tables, the loud-event
+classifier) with checksums and a [model card](src/skyhum/models/MODEL_CARD.md) that lists every training source and
+its licence. Without PyTorch, `--matcher auto` (the default) uses the reference matcher and says so.
 
 **The round-5b test is partial.** It covered 43 selected positive hours in three clock modes, without the clock
 decoys, so the confidence behind `verify`'s operating points and `find`'s point-estimate threshold is **not
@@ -97,12 +98,12 @@ skyhum audit demo/call.wav --start 2026-09-08T14:03:00Z --adsb demo/tracks.npz \
 # 5. Remove the clue
 skyhum scrub demo/call.wav demo/call_tones.wav --method tones
 
-# 6. find refuses without --research and an attestation
+# 6. Rank places inside an area (reference matcher for speed)
 skyhum find demo/clip.wav --start 2026-09-08T14:03:00Z --adsb demo/tracks.npz \
-       --area 34.05,-118.30,r=4km          # exit 4
+       --area 34.05,-118.30,r=4km --matcher reference          # exit 0 or 10
 ```
-Output of step 2 with the r5b tables installed (about six minutes on a busy server CPU). Without them the
-reference matcher answers in seconds, with the same verdict:
+Output of step 2 (about six minutes on a busy server CPU; without PyTorch the reference matcher answers in
+seconds, with the same verdict):
 ```
 verify           clip.wav
 claim            34.05,-118.30,r=2km
@@ -149,7 +150,7 @@ place you want to test.
 | `--json` | One JSON document on stdout | |
 
 Exit codes: `0` supported (or success) · `10` uncorroborated · `11` inconclusive · `2` usage, or not in this build ·
-`3` missing data · `4` refused · `1` selftest failure. Full reference: [docs/cli.md](docs/cli.md).
+`3` missing data · `1` selftest failure. Full reference: [docs/cli.md](docs/cli.md).
 
 ## The modes
 
@@ -183,15 +184,12 @@ Offline simulation on 53 quiet outdoor hours (local area and clock supplied): un
 gate 4; tone scrubbing 17; re-encoding 32. No speech cost on two speech-quality tests. Real platform pipelines may
 behave differently. Re-encoding alone does nothing.
 
-### find (gated)
-`find` ranks places inside one metro or an area at most 100 km across. It requires `--research` and an
-attestation (`own`, `consented` or `public-benchmark`), logs every attempt with a hash of the audio to a local file,
-and prints a point estimate only when the result passes the strict threshold. Otherwise it shows 0.1-degree tiles
-or nothing. **That threshold is not validated for r5b**: it is a fixed margin over the decoy clocks, and how often an
-answer above it is wrong has not been measured. `find` says so in its output. `--single-event` (clock known within
-5 s) allows answers from one pass and prints the mirror point across the aircraft's track as well. It does not
-search whole countries. These are speed bumps, not security: the real limits are the low
-blind success rate and the area cap. Do not use it to locate private individuals.
+### find
+`find` ranks places inside an area you supply and prints a point estimate only when the result passes the strict
+threshold; otherwise it shows 0.1-degree tiles or nothing. **That threshold is not validated for r5b**: it is a fixed
+margin over the decoy clocks, and how often an answer above it is wrong has not been measured. `find` says so in its
+output. `--single-event` (clock known within 5 s) allows answers from one pass and prints the mirror point across
+the aircraft's track as well.
 
 ## Limits
 - One quiet hour rarely names a city: 15 of 327 public recordings (5%), against 50 of 327 (15%) for always
@@ -216,9 +214,9 @@ blind success rate and the area cap. Do not use it to locate private individuals
 More in [docs/limits.md](docs/limits.md).
 
 ## Responsible use
-For checking your own media, auditing exposure and research on public or consented recordings. Do not use it to
-locate private individuals or to harass anyone: skyhum is not for locating private individuals. Verify and audit are the primary paths; `find` is gated and
-area-capped; there is no whole-country search; audio is never uploaded; and the repository carries no recordings.
+skyhum is for research, validation and defence: checking your own media, auditing exposure, and checking the
+published numbers. **It is not for locating private individuals.** That is a statement, not a technical gate.
+Verify and audit are the primary paths; audio is never uploaded; and the repository carries no recordings.
 See [docs/ETHICS.md](docs/ETHICS.md).
 
 If you run a meeting platform or a streaming product, [docs/platforms.md](docs/platforms.md) lists what we tested

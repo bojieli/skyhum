@@ -1,4 +1,4 @@
-"""find: rank places inside a supplied area (gated; see skyhum.safety.gate).
+"""find: rank places inside a supplied area.
 
 Every cell of the area is scored at the stated clock window and at the same decoy clocks verify uses. Sessions
 given together (--sessions) are assumed to come from one spot: their cell scores are summed. The top cells are

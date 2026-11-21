@@ -25,22 +25,25 @@ listener who already has a guess ([limits.md](limits.md)). The design follows fr
 ## Design choices
 
 - **Verify and audit are the front door.** They answer a question about a place you already name.
-- **find is gated.** It needs `--research` and an attestation (`own`, `consented`, `public-benchmark`), it refuses
-  areas more than 100 km across (refused, not truncated), and it prints a point estimate only above the strict
-  threshold. Every attempt, allowed or refused, is logged locally with a hash of the audio.
-- **No whole-country search.** The research code that searches a whole country, clusters metros, and scores many
-  sessions across a country is not part of this package.
+- **Statement, not a gate.** skyhum is for research, validation and defence. It is not for locating private
+  individuals. The code does not try to enforce this: anyone can edit open-source code, and a gate would only
+  stand in the way of people checking the published numbers.
+- **Honest output.** `find` and `locate` print a point estimate only above the strict threshold, and every result
+  states the base rate and that the confidence has not been validated.
+- **Reproducibility.** The whole-country search, the metro clustering and the evaluators are published so that every
+  number in the write-up can be checked (REPRODUCING.md). The country search is an explicit command
+  (`skyhum locate --country`), never the default: verify and audit stay the front door.
 - **Local only.** Audio never leaves the machine. There is no telemetry.
 - **No recordings in the repository.** The benchmark lists links and metadata and respects each recording's
   licence.
 - **Honest output.** Every result says which matcher produced it, what was not tested, and that `UNCORROBORATED`
   is not proof of anything.
 
-## These are speed bumps
+## What actually limits misuse
 
-Anyone can edit open-source code and remove a gate. The gates exist so the default behaviour matches the purpose
-and so misuse takes deliberate effort. The real limits are the low blind success rate, the area cap and the absence
-of a country search.
+The low base rate: one blind hour names the right US region for about 5% of public recordings. The risk is
+repetition from one spot and a listener who already has a guess, which is exactly what people should test on their
+own audio.
 
 ## Reporting misuse or a safety problem
 
