@@ -27,7 +27,8 @@ Their fitting set and licences are in the [model card](../src/skyhum/models/MODE
 
 - `verify`: one run over the claimed area's bounding box at the stated clock window; the claim's score is the best
   hypothesis inside the area. The same run at decoy clocks (tens of minutes off, or other days) gives the decoy
-  level. `SUPPORTED` needs the claim to beat every decoy (default) or beat them by a fixed margin of 3 (strict).
+  level. `SUPPORTED` needs the claim to beat every decoy (default) or beat them by a fixed margin of 3 (strict);
+  neither is calibrated.
   The default is 20 decoys; at least 5 must fit inside the ADS-B file.
 - `find`: one run over the area, hypotheses inside the area, 10 decoy runs by default. A point estimate only above
   the strict margin. Several sessions (`--sessions`) are scored separately and combined where they agree within
@@ -43,22 +44,19 @@ three times faster than the original fallback. It is still slow: on the syntheti
 small box), one run takes on the order of a minute with `--fast`. An hour of audio over a metro area needs a GPU.
 `--device cpu` never initialises CUDA.
 
-## What the round-5b test measured, and what it did not
+## What the round-5b test measured
 
-The test ran on the split_v2 test set with a jittered box (0.25 degree) and detector v3 hints, 43 selected
-positive hours from 7 site clusters. Top-1 within 2 km:
+Round-5b locator, 43 positive hours (split_v2 test, 7 site clusters, with detector v3 hints), top-1 within 2 km:
+blind 22 (51%, CI 26-67%), clock known to 30 min 23 (53%), clock known to 30 s 31 (72%, CI 48-87%), no box (wide)
+19 (44%). Decoy check, 20 clock decoys per hour, p <= 0.05: with the clock known to 30 s, 50 confident answers of
+which 34 were within 2 km (68%, CI 36-87%); 9 of the 43 positive hours were confidently wrong; 1 of 12 empty hours
+was still answered. Clock known to 30 min: 25 of 49 confident answers within 2 km (51%). Single event: 22 confident
+answers, 14 correct and 8 wrong (21% false fixes on 38 hard hours). No margin threshold gives usable precision
+(68-73% at 30 s, on 7 site clusters). The blind and wide runs have no decoy check. Several hours from one spot
+(1 / 4 / 8 hours): blind 10% -> 24% -> 52%, clock known to 30 s 15% -> 47% -> 67%; the pooled confidence of these
+is unmeasured. A real-world false-fix run on 634 recordings is still running.
 
-| Clock | Round 5a | Round 5b |
-|---|---|---|
-| Blind (whole day) | 15 | 22 |
-| Known to 30 min | 19 | 23 |
-| Known to 30 s | 23 | 31 |
-
-- The cluster-bootstrap confidence intervals overlap (only 7 site clusters).
-- The no-box (wide) mode reached only 9 positives before the run was stopped: not a result.
-- **Not run:** the clock decoys of the main test, the decoys of the single-event hard and negative hours, and the
-  multi-session test. So the false-fix rate (how often a decoy-beating answer is wrong) and the calibration of the
-  strict threshold are unmeasured. `verify` and `find` say so in their output.
+Round 5a, same 43 hours, within 2 km: blind 15, clock to 30 min 19, clock to 30 s 23.
 
 ## Not in the package
 

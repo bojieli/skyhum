@@ -4,13 +4,19 @@ Every number on this page comes from the research evaluations. The round-5b loca
 partial test, summarised below and in [locator.md](locator.md); the other numbers come from earlier rounds.
 `--matcher reference` has not been benchmarked.
 
-## Round-5b locator (partial test)
+## Round-5b locator
 
-On 43 selected positive hours (7 site clusters, with detector hints the package does not ship), top-1 within 2 km:
-blind 22 (round 5a: 15), clock known to 30 min 23 (19), clock known to 30 s 31 (23). The confidence intervals
-overlap. The wide mode had 9 positives and is not a result. The clock decoys, the single-event decoys and the
-multi-session test did not run: **the false-fix rate and the calibration of the strict threshold used by `verify`
-and `find` are not measured.**
+Round-5b locator, 43 positive hours (split_v2 test, 7 site clusters, with detector v3 hints), top-1 within 2 km:
+blind 22 (51%, CI 26-67%), clock known to 30 min 23 (53%), clock known to 30 s 31 (72%, CI 48-87%), no box (wide)
+19 (44%). Decoy check, 20 clock decoys per hour, p <= 0.05: with the clock known to 30 s, 50 confident answers of
+which 34 were within 2 km (68%, CI 36-87%); 9 of the 43 positive hours were confidently wrong; 1 of 12 empty hours
+was still answered. Clock known to 30 min: 25 of 49 confident answers within 2 km (51%). Single event: 22 confident
+answers, 14 correct and 8 wrong (21% false fixes on 38 hard hours). No margin threshold gives usable precision
+(68-73% at 30 s, on 7 site clusters). The blind and wide runs have no decoy check. Several hours from one spot
+(1 / 4 / 8 hours): blind 10% -> 24% -> 52%, clock known to 30 s 15% -> 47% -> 67%; the pooled confidence of these
+is unmeasured. A real-world false-fix run on 634 recordings is still running.
+
+`verify` and `find` describe confidence as "not calibrated: about 2 in 3 confident answers within 2 km on a 7-cluster test", never as a precision.
 
 ## How often a location comes out
 

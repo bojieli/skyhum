@@ -372,7 +372,7 @@ usage: skyhum find [-h] [--device {auto,cpu,cuda}] [--workdir DIR] [--json] [-q]
                    [--matcher {auto,r5b,reference}] [--decoys N] [--fast] [--dem-dir DIR]
                    AUDIO
 
-Rank candidate places inside an area you supply. A point estimate is printed only above the strict threshold. The confidence of the r5b locator is NOT validated (its test did not run the clock decoys), so the strict threshold is an uncalibrated margin. For research, validation and defence; not for locating private individuals.
+Rank candidate places inside an area you supply. A point estimate is printed only above the strict threshold. Confidence is not calibrated: about 2 in 3 confident answers within 2 km on a 7-cluster test; the strict threshold is an uncalibrated margin. For research, validation and defence; not for locating private individuals.
 
 positional arguments:
   AUDIO                       wav, flac, ogg; mp3, m4a, webm need ffmpeg

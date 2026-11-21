@@ -151,9 +151,9 @@ def build_parser():
 
     p = cmd("find", "rank places inside a supplied area (research and validation)",
             "Rank candidate places inside an area you supply. A point estimate is printed only above the strict "
-            "threshold. The confidence of the r5b locator is NOT validated (its test did not run the clock decoys), "
-            "so the strict threshold is an uncalibrated margin. For research, validation and defence; not for "
-            "locating private individuals.")
+            "threshold. Confidence is not calibrated: about 2 in 3 confident answers within 2 km on a "
+            "7-cluster test; the strict threshold is an uncalibrated margin. For research, validation and "
+            "defence; not for locating private individuals.")
     _audio_args(p)
     p.add_argument("--area", required=True, metavar="PLACE", help="search area. " + PLACE_HELP)
     p.add_argument("--top", type=int, default=5, help="ranked tiles to show (default: 5)")
@@ -285,7 +285,7 @@ def finish(args, out, command, result, code):
 
 def matcher_label(r):
     if r.get("matcher") == "r5b":
-        return "r5b round-5b locator (test partial; confidence not validated)" + (" [--fast]" if r.get("fast") else "")
+        return "r5b round-5b locator (confidence not calibrated)" + (" [--fast]" if r.get("fast") else "")
     return f"{r.get('matcher')} (simplified, not benchmarked)"
 
 
@@ -549,7 +549,8 @@ def cmd_find(args, out):
     if pe and pe.get("mirror"):
         rows.append(("mirror point", f"{pe['mirror']['lat']:.4f},{pe['mirror']['lon']:.4f} (single pass: either side "
                                      "of the aircraft track fits)"))
-    rows.append(("confidence", "research use, not validated" if r["matcher"] == "r5b" else "not calibrated"))
+    from skyhum.score.r5b_rule import CONFIDENCE
+    rows.append(("confidence", CONFIDENCE if r["matcher"] == "r5b" else "not calibrated"))
     rows.append(("result", r["result"]))
     out.line(fmt_kv(rows))
     code = {"POINT_ESTIMATE": E.OK, "NO_POINT_ESTIMATE": E.UNCORROBORATED, "INCONCLUSIVE": E.INCONCLUSIVE}[r["result"]]

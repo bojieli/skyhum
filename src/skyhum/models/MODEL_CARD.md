@@ -54,7 +54,7 @@ case id of the three sets.
   video (1 positive); 1 public-webcam negative hour (YouTube livestream). Detector v3 hints were inputs.
 - **Evaluation.** split_v2 test, partial (README, "Limits"; docs/locator.md).
 - **Failure modes.** As the locator: no hints means lower recall than the test; the strict threshold is not
-  calibrated (clock decoys of the test did not run).
+  calibrated (about 2 in 3 confident answers within 2 km on the 7-cluster test; docs/locator.md).
 
 ## 3. Loud-event classifier (`loud/classifier.npz`, `loud/calibration.json`)
 

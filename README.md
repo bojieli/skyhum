@@ -4,7 +4,7 @@
 
 ![status: alpha](https://img.shields.io/badge/status-alpha-orange)
 ![locator: r5b, test partial](https://img.shields.io/badge/locator-r5b%20%C2%B7%20test%20partial-yellow)
-![find confidence: not validated](https://img.shields.io/badge/find%20confidence-not%20validated-red)
+![find confidence: not calibrated](https://img.shields.io/badge/find%20confidence-not%20calibrated-red)
 ![licence: MIT](https://img.shields.io/badge/licence-MIT-blue)
 
 Aircraft hum slides in pitch as a plane passes. Matched against public flight history, that slide can narrow down
@@ -38,9 +38,9 @@ The research models ship in `src/skyhum/models/` (detector v3, the round-5b fitt
 classifier) with checksums and a [model card](src/skyhum/models/MODEL_CARD.md) that lists every training source and
 its licence. Without PyTorch, `--matcher auto` (the default) uses the reference matcher and says so.
 
-**The round-5b test is partial.** It covered 43 selected positive hours in three clock modes, without the clock
-decoys, so the confidence behind `verify`'s operating points and `find`'s point-estimate threshold is **not
-validated**. See [Limits](#limits) and [docs/locator.md](docs/locator.md).
+**How far to trust r5b.** On its test (43 positive hours, 7 site clusters) about 2 in 3 confident answers were
+within 2 km, and no threshold made that much better. `verify` and `find` say "not calibrated: about 2 in 3 confident answers within 2 km on a 7-cluster test";
+it is never a precision. See [Limits](#limits) and [docs/locator.md](docs/locator.md).
 
 | Command | State in this build |
 |---|---|
@@ -49,7 +49,7 @@ validated**. See [Limits](#limits) and [docs/locator.md](docs/locator.md).
 | `detect` | working, with a classic ridge detector; the learned detector is pending |
 | `verify` | working with r5b (default) or the reference matcher; clock windows up to ±30 min; you supply the ADS-B file |
 | `audit` | working, except the exposure tier, which is not computed yet |
-| `find` | gate complete; r5b ranking; research use, confidence not validated |
+| `find` | r5b ranking; confidence not calibrated (about 2 in 3 confident answers within 2 km) |
 | `bench list` | working; `bench fetch` and `bench run` are not in this build |
 | `adsb fetch`, `--adsb auto` | not in this build: download ADS-B days yourself ([docs/data.md](docs/data.md)) |
 
@@ -110,7 +110,7 @@ seconds, with the same verdict):
 verify           clip.wav
 claim            34.05,-118.30,r=2km
 clock window     14:02:30Z-14:03:30Z
-matcher          r5b round-5b locator (test partial; confidence not validated) [--fast]
+matcher          r5b round-5b locator (confidence not calibrated) [--fast]
 passes used      3
 decoy rank       1 of 6  (margin 24.237)
 verdict          SUPPORTED  (default operating point)
@@ -195,9 +195,9 @@ behave differently. Re-encoding alone does nothing.
 
 ### find
 `find` ranks places inside an area you supply and prints a point estimate only when the result passes the strict
-threshold; otherwise it shows 0.1-degree tiles or nothing. **That threshold is not validated for r5b**: it is a fixed
-margin over the decoy clocks, and how often an answer above it is wrong has not been measured. `find` says so in its
-output. `--single-event` (clock known within 5 s) allows answers from one pass and prints the mirror point across
+threshold; otherwise it shows 0.1-degree tiles or nothing. **That confidence is not calibrated**: on the round-5b
+test about 2 in 3 confident answers were within 2 km, and no margin threshold gave usable precision. `find` says
+so in its output. `--single-event` (clock known within 5 s) allows answers from one pass and prints the mirror point across
 the aircraft's track as well.
 
 ## Limits
@@ -211,12 +211,15 @@ the aircraft's track as well.
   ordinary indoor or mobile caller.
 - Needs an accurate start time. Wider clocks mean weaker evidence.
 - Jets alone, and distance cues beyond ground reflection, did not help.
-- **Round-5b locator (default here), partial test** on 43 selected positive hours (split_v2 test, 7 site
-  clusters, with detector hints this package does not ship): within 2 km, blind 22 (round 5a: 15), clock known to
-  30 min 23 (19), clock known to 30 s 31 (23). The confidence intervals overlap. The no-box mode had only 9
-  positives and is not a result. The clock decoys of this test and the decoys for single-event hard and negative
-  hours did not run, so the false-fix rate and the calibration of the `find` threshold are **not measured**.
-  Multi-session scoring was not run.
+- **Round-5b locator (default here).** Round-5b locator, 43 positive hours (split_v2 test, 7 site clusters, with detector v3 hints), top-1 within 2 km:
+  blind 22 (51%, CI 26-67%), clock known to 30 min 23 (53%), clock known to 30 s 31 (72%, CI 48-87%), no box (wide)
+  19 (44%). Decoy check, 20 clock decoys per hour, p <= 0.05: with the clock known to 30 s, 50 confident answers of
+  which 34 were within 2 km (68%, CI 36-87%); 9 of the 43 positive hours were confidently wrong; 1 of 12 empty hours
+  was still answered. Clock known to 30 min: 25 of 49 confident answers within 2 km (51%). Single event: 22 confident
+  answers, 14 correct and 8 wrong (21% false fixes on 38 hard hours). No margin threshold gives usable precision
+  (68-73% at 30 s, on 7 site clusters). The blind and wide runs have no decoy check. Several hours from one spot
+  (1 / 4 / 8 hours): blind 10% -> 24% -> 52%, clock known to 30 s 15% -> 47% -> 67%; the pooled confidence of these
+  is unmeasured. A real-world false-fix run on 634 recordings is still running.
 - The numbers above the r5b line come from earlier rounds of the research scorer. `--matcher reference` has not
   been benchmarked.
 

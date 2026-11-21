@@ -5,8 +5,8 @@ area's score is the best hypothesis that lies inside the area (0 when none). Dec
 shifted by tens of minutes or whole days (skyhum.score.decoys); a decoy is skipped, never scored as zero, when the
 ADS-B file does not cover it. The verdict rule is the same as for the reference matcher.
 
-Not validated: round 5b's test did not run its clock decoys, so how often a decoy-beating answer is wrong (the
-false-fix rate) and where a strict threshold should sit are unmeasured. THETA_STRICT below is a fixed margin in
+Not calibrated: in round 5b's decoy check (clock known to 30 s) about 2 in 3 confident answers were within 2 km,
+on a 7-cluster test, and no margin threshold gave usable precision. THETA_STRICT below is a fixed margin in
 log-likelihood units, not a calibrated value.
 """
 import os
@@ -26,10 +26,11 @@ DEFAULT_DECOYS = 20
 FAST_ARGS = ["--llr-calib-n", "3000", "--calib-n", "10000", "--top", "2", "--top2", "1", "--refine-radius", "400",
              "--refine2-radius", "150", "--refine2-spacing", "50"]
 SINGLE_EVENT_ARGS = ["--min-voters", "1", "--nms-km", "1"]
-NOT_VALIDATED = ("research use; confidence not validated on r5b: its test did not run the clock decoys, so the "
-                 "false-fix rate and the strict threshold are unmeasured")
+CONFIDENCE = "not calibrated: about 2 in 3 confident answers within 2 km on a 7-cluster test"
+NOT_VALIDATED = ("confidence " + CONFIDENCE + " (clock known to 30 s: 34 of 50); no margin threshold gives "
+                 "usable precision; blind and wide runs have no decoy check")
 R5B_LIMITS = LIMITS + [
-    "Matcher r5b: test partial (43 selected hours; clock decoys, single-event decoys and multi-session not run). "
+    "Matcher r5b: 43 positive hours on 7 site clusters; confident answers within 2 km about 2 in 3 (not calibrated). "
     "Run here without detector hints, which the test used.",
 ]
 
