@@ -1,7 +1,8 @@
 """Run the round-5b locator (skyhum.match.r5b) on audio in memory.
 
 The frozen round-5b configuration (eval/r5b/final_r5b_args.txt) is used unchanged except for paths. Detector hints
-(detector v3) are not available in the package, so runs here have no hints; the round-5b test numbers used them.
+are passed as in the round-5b test: a JSON list of detector v3 detections ({t, f, p, ...}, skyhum.detect.v3) given
+with --hints; the frozen --hint-pmin 0.8 keeps only the confident ones.
 """
 import json
 import math
@@ -47,15 +48,24 @@ def write_spec(x16k, path, fs=16000):
     np.savez(path, W=sp["W"].astype(np.float16), f=sp["f"], t=sp["t"], hop_s=sp["hop_s"], duration=sp["duration"])
 
 
+def write_hints(dets, path):
+    """Locator hints file: the detector's detections, all fields, as the research runs wrote them."""
+    with open(path, "w") as f:
+        json.dump([{k: float(v) for k, v in d.items()} for d in dets], f, indent=0)
+
+
 def run(spec_path, tracks_path, bbox, s_min, s_max, *, spacing_m=500.0, ground_m=0.0, dem_dir=None, extra=(),
-        workdir=None):
-    """bbox: (west, south, east, north). s_min, s_max: earliest and latest recording start (epoch s)."""
+        workdir=None, hints_path=None):
+    """bbox: (west, south, east, north). s_min, s_max: earliest and latest recording start (epoch s).
+    hints_path: detector hints file (write_hints), or None to run without hints."""
     from skyhum.match import r5b
     w, s, e, n = bbox
     with tempfile.TemporaryDirectory(prefix="skyhum_r5b_", dir=workdir) as td:
         argv = ["--spec", spec_path, "--tracks", tracks_path, "--bbox", f"{s},{n},{w},{e}",
                 "--spacing", str(spacing_m), "--ground", str(ground_m), "--start", str(s_min), "--end", str(s_max),
                 "--plots", "0", "--out", os.path.join(td, "loc")] + frozen_args() + list(extra)
+        if hints_path:
+            argv += ["--hints", hints_path]
         if dem_dir:
             argv += ["--dem-dir", dem_dir]
         out = r5b.main(argv)

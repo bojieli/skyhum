@@ -15,6 +15,7 @@ import tempfile
 import numpy as np
 
 from skyhum import __version__
+from skyhum.detect.v3.detect import HINT_PMIN
 from skyhum.errors import MissingData, NotImplementedInBuild
 from skyhum.match import locator as LOC
 from skyhum.match.reference import hex_hash
@@ -28,19 +29,35 @@ FAST_ARGS = ["--llr-calib-n", "3000", "--calib-n", "10000", "--top", "2", "--top
 SINGLE_EVENT_ARGS = ["--min-voters", "1", "--nms-km", "1"]
 NOT_VALIDATED = ("research use; confidence not validated on r5b: its test did not run the clock decoys, so the "
                  "false-fix rate and the strict threshold are unmeasured")
-R5B_LIMITS = LIMITS + [
-    "Matcher r5b: test partial (43 selected hours; clock decoys, single-event decoys and multi-session not run). "
-    "Run here without detector hints, which the test used.",
-]
+R5B_TEST = "Matcher r5b: test partial (43 selected hours; clock decoys, single-event decoys and multi-session not run)."
+
+
+def r5b_limits(with_hints):
+    return LIMITS + [R5B_TEST + (" Detector v3 hints used, as in the test." if with_hints else
+                                 " Run here without detector hints, which the test used.")]
+
+
+R5B_LIMITS = r5b_limits(False)
+
+
+def hints_summary(dets):
+    if dets is None:
+        return None
+    return dict(detector="v3", n=len(dets), n_used=sum(1 for d in dets if float(d.get("p", 1.0)) >= HINT_PMIN),
+                hint_pmin=HINT_PMIN)
 
 
 class Session:
-    """One recording prepared for the locator: spectrogram file and duration."""
+    """One recording prepared for the locator: spectrogram file, duration and the detector hints file (or None)."""
 
-    def __init__(self, x, fs, tmpdir):
+    def __init__(self, x, fs, tmpdir, hints=None):
         self.path = os.path.join(tmpdir, f"spec{id(self)}.npz")
         LOC.write_spec(x, self.path, fs)
         self.dur = x.size / fs
+        self.hints_path = None
+        if hints is not None:
+            self.hints_path = os.path.join(tmpdir, f"hints{id(self)}.json")
+            LOC.write_hints(hints, self.hints_path)
 
 
 def _passes(h):
@@ -56,7 +73,8 @@ def _passes(h):
 
 def area_score(sess, tracks, area, lo, hi, *, extra=(), ground_m=0.0, dem_dir=None):
     """(score, best hypothesis or None, run summary)."""
-    out = LOC.run(sess.path, tracks.path, area.bbox, lo, hi, ground_m=ground_m, dem_dir=dem_dir, extra=extra)
+    out = LOC.run(sess.path, tracks.path, area.bbox, lo, hi, ground_m=ground_m, dem_dir=dem_dir, extra=extra,
+                  hints_path=sess.hints_path)
     hyps = [h for h in out.get("hypotheses", []) if bool(area.contains(h["lat"], h["lon"]))]
     best = max(hyps, key=lambda h: h["score"]) if hyps else None
     return (max(0.0, float(best["score"])) if best else 0.0), best, dict(n_passes=int(out.get("n_passes", 0)),
@@ -72,14 +90,17 @@ def _check(tracks, spans):
 
 
 def verify(x, fs, tracks, claim, lo, hi, *, versus=None, operating_point="default", n_decoys=DEFAULT_DECOYS, seed=0,
-           fast=False, ground_m=0.0, dem_dir=None, progress=None):
+           fast=False, ground_m=0.0, dem_dir=None, progress=None, hints=None):
+    """hints: detector v3 detections of this audio (skyhum.detect.v3), passed to the locator as in the round-5b
+    test; None runs without hints."""
     extra = FAST_ARGS if fast else []
     kw = dict(extra=extra, ground_m=ground_m, dem_dir=dem_dir)
     with tempfile.TemporaryDirectory(prefix="skyhum_v_") as td:
-        sess = Session(x, fs, td)
+        sess = Session(x, fs, td, hints)
         _check(tracks, [(lo, hi, sess.dur)])
         base = dict(version=__version__, matcher=LOC.NAME, benchmarked="partial", fast=bool(fast),
-                    operating_point=operating_point, claim=claim.to_json(), seed=seed, limits=R5B_LIMITS, llr=None,
+                    operating_point=operating_point, claim=claim.to_json(), seed=seed,
+                    limits=r5b_limits(hints is not None), hints=hints_summary(hints), llr=None,
                     note=NOT_VALIDATED, theta=THETA[operating_point], tested_clock_window=dict(lo=lo, hi=hi))
         if sess.dur < MIN_AUDIO_S:
             return dict(base, verdict="INCONCLUSIVE", reason=f"audio too short ({sess.dur:.0f} s)", passes=[],
@@ -123,21 +144,23 @@ def verify(x, fs, tracks, claim, lo, hi, *, versus=None, operating_point="defaul
 
 
 def find(sessions, tracks, area, *, top=5, n_decoys=10, seed=0, fast=False, single_event=False, ground_m=0.0,
-         dem_dir=None, progress=None):
+         dem_dir=None, progress=None, hints=None):
     """sessions: list of (x, fs, lo, hi). Multi-session: per-cell scores are not available from the locator, so
-    sessions are scored separately and only hypotheses that every session places within 3 km of each other count."""
+    sessions are scored separately and only hypotheses that every session places within 3 km of each other count.
+    hints: one detector-hint list (or None) per session, or None for no hints."""
     from skyhum.io.geo import haversine_km
     from skyhum.score.find import tile
     extra = (FAST_ARGS if fast else []) + (SINGLE_EVENT_ARGS if single_event else [])
     kw = dict(extra=extra, ground_m=ground_m, dem_dir=dem_dir)
     with tempfile.TemporaryDirectory(prefix="skyhum_f_") as td:
-        S = [(Session(x, fs, td), lo, hi) for x, fs, lo, hi in sessions]
+        hl = list(hints) if hints is not None else [None] * len(sessions)
+        S = [(Session(x, fs, td, h), lo, hi) for (x, fs, lo, hi), h in zip(sessions, hl)]
         _check(tracks, [(lo, hi, s.dur) for s, lo, hi in S])
         offsets = D.draw_offsets(n_decoys, [(lo, hi, s.dur) for s, lo, hi in S], tracks, seed=seed)
         runs = []
         n_pass = 0
         for s, lo, hi in S:
-            out = LOC.run(s.path, tracks.path, area.bbox, lo, hi, **kw)
+            out = LOC.run(s.path, tracks.path, area.bbox, lo, hi, hints_path=s.hints_path, **kw)
             n_pass = max(n_pass, int(out.get("n_passes", 0)))
             runs.append([h for h in out.get("hypotheses", []) if bool(area.contains(h["lat"], h["lon"]))])
         cands = []
@@ -179,7 +202,8 @@ def find(sessions, tracks, area, *, top=5, n_decoys=10, seed=0, fast=False, sing
                best_score=round(best, 3), decoy_level=round(level, 3), margin=round(margin, 3),
                confidence=round(float((dec < best).mean()), 3) if dec.size and best > 0 else 0.0,
                beats_all_decoys=default, strict=strict, theta_strict=THETA["strict"], passes_in_range=n_pass,
-               note=NOT_VALIDATED, limits=R5B_LIMITS, seed=seed,
+               note=NOT_VALIDATED, limits=r5b_limits(any(h is not None for h in hl)), seed=seed,
+               hints=[hints_summary(h) for h in hl],
                ranked=[dict(rank=k + 1, tile_bbox=tile(h["lat"], h["lon"]), score=round(t, 3))
                        for k, (t, h) in enumerate(picked)] if default else [],
                point_estimate=None, cells=None, cell_spacing_km=0.5, coarse_grid=False)

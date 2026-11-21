@@ -31,10 +31,10 @@ def test_global_flags_before_or_after(run_cli):
 
 
 def test_detect(run_cli, demo, tmp_path):
-    code, out, _ = run_cli("detect", fx(demo, "clip.wav"), "--start", START, "--json")
+    code, out, _ = run_cli("detect", fx(demo, "clip.wav"), "--start", START, "--json", "--detector", "classic")
     r = json.loads(out)["result"]
-    assert code == 0 and sum(p["kind"] == "doppler-like" for p in r["passes"]) >= 2
-    code, out, _ = run_cli("detect", fx(demo, "quiet.wav"), "--json")
+    assert code == 0 and r["detector"] == "classic-ridge" and sum(p["kind"] == "doppler-like" for p in r["passes"]) >= 2
+    code, out, _ = run_cli("detect", fx(demo, "quiet.wav"), "--json", "--detector", "classic")
     assert code == 0 and not [p for p in json.loads(out)["result"]["passes"] if p["kind"] == "doppler-like"]
 
 

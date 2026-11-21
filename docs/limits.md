@@ -6,7 +6,7 @@ partial test, summarised below and in [locator.md](locator.md); the other number
 
 ## Round-5b locator (partial test)
 
-On 43 selected positive hours (7 site clusters, with detector hints the package does not ship), top-1 within 2 km:
+On 43 selected positive hours (7 site clusters, with detector v3 hints, as `--hints auto` gives them), top-1 within 2 km:
 blind 22 (round 5a: 15), clock known to 30 min 23 (19), clock known to 30 s 31 (23). The confidence intervals
 overlap. The wide mode had 9 positives and is not a result. The clock decoys, the single-event decoys and the
 multi-session test did not run: **the false-fix rate and the calibration of the strict threshold used by `verify`
@@ -48,11 +48,14 @@ two speech-quality tests. This is a simulation on recorded audio, not a measurem
 
 ## Limits of this build
 
-- Default matcher r5b: slow on CPU; 20 decoys for verify and 10 for find by default; run without detector hints.
+- Default matcher r5b: slow on CPU; 20 decoys for verify and 10 for find by default; detector v3 hints as in the
+  test (`--hints none` turns them off).
   `--matcher reference`: not benchmarked; 0.5 km cells, coarser for large areas (flagged).
 - Clock windows up to ±30 min.
 - Strict operating point: a fixed margin, not calibrated to a false-accept rate.
 - Terrain: flat ground at `--ground-alt` unless `--dem-dir` points at GeoTIFF tiles.
-- Detector: the classic ridge detector; the learned detector is pending.
+- Detector: detector v3 (needs PyTorch); the classic ridge detector without it. `audit` still counts passes with
+  the classic detector.
+- Loud-event channel: ported as a library (`skyhum.loud`); not in the command line yet.
 - `audit` does not compute exposure tiers yet. `bench fetch`, `bench run`, `adsb fetch` and `--adsb auto` are not
   implemented.

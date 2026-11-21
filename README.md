@@ -32,7 +32,9 @@ This is an alpha. The command line, the place grammar, the verdicts, the reports
 shape. `verify`, `audit` and `find` use the round-5b locator from the research code (`--matcher r5b`, the
 default when available). It runs on a GPU when there is one and falls back to the CPU, where it is much slower:
 minutes for a short clip, far longer for an hour of audio. A simplified numpy matcher is kept as
-`--matcher reference` for quick checks; it has not been benchmarked.
+`--matcher reference` for quick checks; it has not been benchmarked. As in the round-5b test, r5b runs get
+detector v3 hints (`--hints auto`, the default: the learned detector runs on the audio first, a few seconds per hour
+on a CPU).
 
 The research models ship in `src/skyhum/models/` (detector v3, the round-5b fitted tables, the loud-event
 classifier) with checksums and a [model card](src/skyhum/models/MODEL_CARD.md) that lists every training source and
@@ -46,7 +48,7 @@ validated**. See [Limits](#limits) and [docs/locator.md](docs/locator.md).
 |---|---|
 | `selftest`, `doctor`, `regions list` | working (`selftest --quick` skips the slow r5b checks) |
 | `scrub` | working: the pause gate and the tone scrubber from the research code, unchanged |
-| `detect` | working, with a classic ridge detector; the learned detector is pending |
+| `detect` | working: detector v3, the learned detector of the research runs (needs PyTorch; CPU is fine); without PyTorch the classic ridge detector (`--detector classic`), and it says so |
 | `verify` | working with r5b (default) or the reference matcher; clock windows up to ±30 min; you supply the ADS-B file |
 | `audit` | working, except the exposure tier, which is not computed yet |
 | `find` | gate complete; r5b ranking; research use, confidence not validated |
@@ -212,7 +214,7 @@ the aircraft's track as well.
 - Needs an accurate start time. Wider clocks mean weaker evidence.
 - Jets alone, and distance cues beyond ground reflection, did not help.
 - **Round-5b locator (default here), partial test** on 43 selected positive hours (split_v2 test, 7 site
-  clusters, with detector hints this package does not ship): within 2 km, blind 22 (round 5a: 15), clock known to
+  clusters, with detector v3 hints as `--hints auto` gives them): within 2 km, blind 22 (round 5a: 15), clock known to
   30 min 23 (19), clock known to 30 s 31 (23). The confidence intervals overlap. The no-box mode had only 9
   positives and is not a result. The clock decoys of this test and the decoys for single-event hard and negative
   hours did not run, so the false-fix rate and the calibration of the `find` threshold are **not measured**.

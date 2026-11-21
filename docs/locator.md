@@ -33,7 +33,16 @@ Their fitting set and licences are in the [model card](../src/skyhum/models/MODE
   the strict margin. Several sessions (`--sessions`) are scored separately and combined where they agree within
   3 km; the research multi-session scorer was not ported (and was not tested in round 5b).
 - `--fast` lowers the calibration sample and the refinement for demos and tests. Do not use it for results.
-- Detector hints: the test used detector v3 hints. The package has no learned detector yet, so runs here have none.
+- Detector hints, as in the test: before the locator runs, detector v3 (`skyhum.detect.v3`) scans the audio and
+  its detections go to the locator as `--hints` (a JSON list of `{t, f, p, p_raw, v, d, start}`, t in seconds from
+  the start of the audio). The frozen `--hint-pmin 0.8` keeps the confident ones: they add candidate spots (within
+  8 s and 3 % of each hint) to the curve search, and a hint at a pass's closest approach enters its log-likelihood
+  ratio as P(hint | audible pass) against the recording's hint coverage (fitted in `k3_full.json`).
+  `--hints auto` (default) computes them from the file, decoded at its own rate and resampled straight to 1 kHz as
+  the research runs did; `--hints FILE` takes a file written by `skyhum detect --hints-out FILE`; `--hints none`
+  runs without (lower recall than the test). With `--scrub`, the scrubbed audio gets its own hints.
+- Detector v3 on a CPU takes a few seconds per hour of audio; the port gives the research code's detections exactly
+  (same seed; checked on two A2O hours and on the synthetic clips, `tests/test_detect_v3.py`).
 
 ## CPU and GPU
 

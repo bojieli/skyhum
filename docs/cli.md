@@ -14,7 +14,7 @@ positional arguments:
                             FAIL
     doctor                  check Python packages, ffmpeg, GPU, ADS-B cache and detector weights
     regions                 named regions accepted by --claim/--where/--area
-    detect                  list aircraft-like tonal passes in the audio (no location involved)
+    detect                  list aircraft fly-overs in the audio (no location involved)
     verify                  is the audio consistent with a claimed place and time?
     audit                   you say where you were: how much did the audio give away?
     scrub                   remove the clue: low-band gate in pauses, or tone scrubbing
@@ -130,44 +130,53 @@ Audio never leaves this machine. See docs/ for concepts, limits and responsible 
 usage: skyhum detect [-h] [--device {auto,cpu,cuda}] [--workdir DIR] [--json] [-q] [-v]
                      [--channel CHANNEL] [--start TIME] [--tz ZONE] [--start-from-file]
                      [--start-tol DUR] [--duration DUR] [--adsb PATH|auto] [--out DIR]
-                     [--report FILE] [--ground-alt M] [--spacing KM] [--seed SEED] [--png FILE]
+                     [--report FILE] [--ground-alt M] [--spacing KM] [--seed SEED]
+                     [--detector {auto,v3,classic}] [--min-p P] [--hints-out FILE] [--png FILE]
                      AUDIO
 
-List aircraft-like tonal passes found in the audio, with an optional spectrogram PNG. Uses the classic ridge detector in this build (the learned detector is pending).
+List aircraft fly-overs found in the audio: closest-approach time, frequency and probability from detector v3 (the learned detector of the research runs; needs PyTorch, CPU is enough), or tonal passes from the classic ridge detector. Optional spectrogram PNG.
 
 positional arguments:
-  AUDIO                     wav, flac, ogg; mp3, m4a, webm need ffmpeg
+  AUDIO                       wav, flac, ogg; mp3, m4a, webm need ffmpeg
 
 options:
-  -h, --help                show this help message and exit
-  --device {auto,cpu,cuda}  device for the r5b locator: auto, cpu or cuda (default: auto; cpu never
-                            touches a GPU)
-  --workdir DIR             working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
-  --json                    print one JSON document to stdout
-  -q, --quiet               print only the result line
-  -v, --verbose             print progress to stderr
-  --channel CHANNEL         channel to use, 0-based (default: 0)
-  --png FILE                write the spectrogram with detections to FILE (needs matplotlib)
+  -h, --help                  show this help message and exit
+  --device {auto,cpu,cuda}    device for the r5b locator: auto, cpu or cuda (default: auto; cpu
+                              never touches a GPU)
+  --workdir DIR               working directory (default: $SKYHUM_WORKDIR or ~/.local/share/skyhum)
+  --json                      print one JSON document to stdout
+  -q, --quiet                 print only the result line
+  -v, --verbose               print progress to stderr
+  --channel CHANNEL           channel to use, 0-based (default: 0)
+  --detector {auto,v3,classic}
+                              v3: the learned detector; classic: the ridge detector; auto (default):
+                              v3 when PyTorch is installed, otherwise classic
+  --min-p P                   v3: list detections with p >= P (default: 0.5; the locator uses p >=
+                              0.8)
+  --hints-out FILE            v3: write every detection as a locator hints file (JSON), for --hints
+                              FILE
+  --png FILE                  write the spectrogram with detections to FILE (needs matplotlib)
 
 clock:
-  --start TIME              when the recording began: UTC ISO-8601 (2026-09-08T14:03:00Z) or epoch
-                            seconds
-  --tz ZONE                 time zone for a --start without Z or offset, e.g. Europe/London
-  --start-from-file         take the start from container metadata or file mtime (prints a warning)
-  --start-tol DUR           clock uncertainty: 5s, 30s (default), 30m; 2h and 'date' are not in this
-                            build's CPU matcher. Wider means more chance matches
-  --duration DUR            use only the first DUR of the audio, e.g. 10m
+  --start TIME                when the recording began: UTC ISO-8601 (2026-09-08T14:03:00Z) or epoch
+                              seconds
+  --tz ZONE                   time zone for a --start without Z or offset, e.g. Europe/London
+  --start-from-file           take the start from container metadata or file mtime (prints a
+                              warning)
+  --start-tol DUR             clock uncertainty: 5s, 30s (default), 30m; 2h and 'date' are not in
+                              this build's CPU matcher. Wider means more chance matches
+  --duration DUR              use only the first DUR of the audio, e.g. 10m
 
 data and output:
-  --adsb PATH|auto          ADS-B tracks.npz day file (afg layout); 'auto' download is not in this
-                            build
-  --out DIR                 directory for extra outputs (spectrogram PNG)
-  --report FILE             write a report: FILE.json or a self-contained FILE.html
+  --adsb PATH|auto            ADS-B tracks.npz day file (afg layout); 'auto' download is not in this
+                              build
+  --out DIR                   directory for extra outputs (spectrogram PNG)
+  --report FILE               write a report: FILE.json or a self-contained FILE.html
 
 advanced:
-  --ground-alt M            ground altitude in metres (no terrain model in this build; default 0)
-  --spacing KM              grid spacing (default: automatic)
-  --seed SEED               seed for decoy clocks (default: 0)
+  --ground-alt M              ground altitude in metres (no terrain model in this build; default 0)
+  --spacing KM                grid spacing (default: automatic)
+  --seed SEED                 seed for decoy clocks (default: 0)
 
 exit codes:
   0   success (verify: SUPPORTED)        10  UNCORROBORATED (not proof the claim is false)
@@ -187,6 +196,7 @@ usage: skyhum verify [-h] [--device {auto,cpu,cuda}] [--workdir DIR] [--json] [-
                      [--report FILE] [--ground-alt M] [--spacing KM] [--seed SEED] --claim PLACE
                      [--versus PLACE] [--operating-point {default,strict}]
                      [--matcher {auto,r5b,reference}] [--decoys N] [--fast] [--dem-dir DIR]
+                     [--hints auto|none|FILE]
                      AUDIO
 
 Score the claimed place at the stated clock against decoys (the same place at wrong clocks and other days, and optionally a rival place). SUPPORTED only if the claim beats every decoy. UNCORROBORATED is not evidence that the claim is false.
@@ -243,6 +253,10 @@ matcher:
                               install, not for results
   --dem-dir DIR               r5b: directory of GeoTIFF terrain tiles (otherwise flat ground at
                               --ground-alt); nothing is downloaded
+  --hints auto|none|FILE      r5b: detector hints, as in the round-5b test. auto (default): run
+                              detector v3 on the audio; FILE: a JSON list of {t, f, p} (seconds from
+                              the start of the audio, Hz, probability), e.g. from `skyhum detect
+                              --hints-out`; none: no hints
 
 exit codes:
   0   success (verify: SUPPORTED)        10  UNCORROBORATED (not proof the claim is false)
@@ -261,7 +275,7 @@ usage: skyhum audit [-h] [--device {auto,cpu,cuda}] [--workdir DIR] [--json] [-q
                     [--start-tol DUR] [--duration DUR] [--adsb PATH|auto] [--out DIR]
                     [--report FILE] [--ground-alt M] [--spacing KM] [--seed SEED] --where PLACE
                     [--scrub OUT] [--method {gate,tones}] [--matcher {auto,r5b,reference}]
-                    [--decoys N] [--fast] [--dem-dir DIR]
+                    [--decoys N] [--fast] [--dem-dir DIR] [--hints auto|none|FILE]
                     AUDIO
 
 You supply the truth. Reports detected passes, ADS-B passes in range, whether verify accepts the true place, whether a place 15 km away also passes, and fixed-rule advice. With --scrub, repeats the audit on scrubbed audio.
@@ -316,6 +330,10 @@ matcher:
                               install, not for results
   --dem-dir DIR               r5b: directory of GeoTIFF terrain tiles (otherwise flat ground at
                               --ground-alt); nothing is downloaded
+  --hints auto|none|FILE      r5b: detector hints, as in the round-5b test. auto (default): run
+                              detector v3 on the audio; FILE: a JSON list of {t, f, p} (seconds from
+                              the start of the audio, Hz, probability), e.g. from `skyhum detect
+                              --hints-out`; none: no hints
 
 exit codes:
   0   success (verify: SUPPORTED)        10  UNCORROBORATED (not proof the claim is false)
@@ -370,6 +388,7 @@ usage: skyhum find [-h] [--device {auto,cpu,cuda}] [--workdir DIR] [--json] [-q]
                    [--ground-alt M] [--spacing KM] [--seed SEED] --area PLACE [--top TOP]
                    [--sessions A,B] [--session-starts T1,T2] [--single-event]
                    [--matcher {auto,r5b,reference}] [--decoys N] [--fast] [--dem-dir DIR]
+                   [--hints auto|none|FILE]
                    AUDIO
 
 Rank candidate places inside an area you supply. A point estimate is printed only above the strict threshold. The confidence of the r5b locator is NOT validated (its test did not run the clock decoys), so the strict threshold is an uncalibrated margin. For research, validation and defence; not for locating private individuals.
@@ -427,6 +446,10 @@ matcher:
                               install, not for results
   --dem-dir DIR               r5b: directory of GeoTIFF terrain tiles (otherwise flat ground at
                               --ground-alt); nothing is downloaded
+  --hints auto|none|FILE      r5b: detector hints, as in the round-5b test. auto (default): run
+                              detector v3 on the audio; FILE: a JSON list of {t, f, p} (seconds from
+                              the start of the audio, Hz, probability), e.g. from `skyhum detect
+                              --hints-out`; none: no hints
 
 exit codes:
   0   success (verify: SUPPORTED)        10  UNCORROBORATED (not proof the claim is false)
