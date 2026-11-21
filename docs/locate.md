@@ -16,9 +16,9 @@ validation and defence; not for locating private individuals.
 | step | what | command |
 |---|---|---|
 | static tables | region rasters (30"), DEM, county population, from public files downloaded at run time | `skyhum country static` |
-| ADS-B days | adsb.lol daily releases cut to the country's low traffic (≤ 10,000 ft) | `skyhum adsb fetch --country` (later build) |
+| ADS-B days | adsb.lol daily releases cut to the country's low traffic (≤ 10,000 ft) | `skyhum adsb fetch --country` |
 | detection | detector-v3 detections per recording (`hints_v3.json`) | supplied with `--hints` until detector inference ships |
-| search | candidates from detections, round-5b per-pass LLR scoring, decoy variants, refinement | `skyhum locate --country` (later build) |
+| search | candidates from detections, round-5b per-pass LLR scoring, decoy variants, refinement | `skyhum locate --country`; benchmark: `skyhum country stage` and `skyhum country run` |
 | scoring | region top-1 / top-3, distance tiers, own and pooled decoy confidence, multi-session | `skyhum country score` |
 | priors | fusion with population and UTC offset; the sound given a prior | `skyhum country prior` |
 | claims | verify a claimed region / 40 km box / 5 km neighbourhood | `skyhum country claims` |
@@ -27,6 +27,41 @@ The work directory is `$SKYHUM_WORKDIR/country` (override with `--country-root`)
 `groups/`, `truth/`, `runs/`. The scorers are the only parts that open `truth/`; a search process installs an audit
 hook that refuses any path under it and records every work-directory path it opened, and the scorer refuses outputs
 that touched the truth.
+
+## Locate one recording
+
+```
+skyhum country static --country US                      # once
+skyhum adsb fetch --country US --date 2026-09-08 ...    # the days locate asks for
+skyhum locate --country US rec.flac --start 2026-09-08T14:03:00Z --hints rec.dets.json
+```
+
+`--hints` is the detector-v3 output for the recording, `[{"t": seconds, "f": Hz, "p": probability}, ...]`. Without
+detections the search proposes no candidate place. `locate` prints the ranked regions with their best points, whether
+the top region beats every decoy (8 clock shifts and, by default, the same time 7 days before and after: those days
+need their ADS-B files too), the base rate and the limits. `--sessions`, `--session-starts` and `--session-hints` add
+recordings you state come from the same place; they are searched jointly. `--report FILE` writes the full output.
+
+On a GPU a one-hour recording takes minutes; on a CPU, hours (see the measured ratio below).
+
+## ADS-B days
+
+`skyhum adsb fetch --country US|AU|both --date D [--date D ...]` downloads the whole adsb.lol global day (a 2023 day is
+about 0.9 GB, recent days several GB in split parts) into `adsb/raw/`, resuming an interrupted download, cuts it to the
+country box below 10,000 ft (prop, rotor and unknown aircraft; jets to a side file) and deletes the archive. The cut
+files are a few MB to tens of MB per country-day. They are derived from adsb.lol and stay under ODbL 1.0. Aircraft
+classes use the ICAO Doc 8643 type table from the tar1090-db project, downloaded on first use.
+
+## Benchmark runs
+
+```
+skyhum country stage src/skyhum/bench/manifests/a2o_country_v1.json --audio-dir A --hints-dir H
+skyhum adsb fetch --country AU --date ...          # every day the stage step lists
+skyhum country run main --jobs 2                   # resumable; one process per group
+skyhum country score WORKDIR/country/runs/main --truth WORKDIR/country/truth/truth.json --out main
+```
+
+or in one step `skyhum bench run --reproduce country --audio-dir A --hints-dir H --jobs 2`.
 
 ## Static tables
 

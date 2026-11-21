@@ -51,9 +51,10 @@ it is never a precision. See [Limits](#limits) and [docs/locator.md](docs/locato
 | `audit` | working, except the exposure tier, which is not computed yet |
 | `find` | r5b ranking; confidence not calibrated (about 2 in 3 confident answers within 2 km) |
 | `bench list` | working; `bench fetch` is not in this build |
-| `bench run --reproduce FAMILY` | working for rescoring locator outputs (`--outputs DIR`): families `country`, `prior`, `verify`, `box`, `single-event`; rerunning the searches is not in this build yet. See [REPRODUCING.md](REPRODUCING.md) |
-| `country static`, `country score / prior / claims` | working: the region rasters (public Census / ABS files) and the scorers of the whole-country search ([docs/locate.md](docs/locate.md)) |
-| `adsb fetch`, `--adsb auto` | not in this build: download ADS-B days yourself ([docs/data.md](docs/data.md)) |
+| `bench run --reproduce FAMILY` | working for rescoring locator outputs (`--outputs DIR`): families `country`, `prior`, `verify`, `box`, `single-event`; reruns from the A2O recordings need detector-v3 detections (`--hints-dir`). See [REPRODUCING.md](REPRODUCING.md) |
+| `country static / stage / run / score / prior / claims` | working: the region rasters (public Census / ABS files) and the scorers of the whole-country search ([docs/locate.md](docs/locate.md)) |
+| `adsb fetch --country US\|AU` | working: whole adsb.lol days, resumable, cut to the country's low traffic ([docs/locate.md](docs/locate.md)); `--area` and `--adsb auto` are not in this build |
+| `locate --country US\|AU` | working, research command: whole-country search; prints the base rate (about 5 % for one US hour) and its limits; needs detector-v3 detections (`--hints`) until detector inference ships |
 
 Anything not in this build exits with code 2 and says so.
 

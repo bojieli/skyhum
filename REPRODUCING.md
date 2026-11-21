@@ -17,15 +17,15 @@ V, ...) are the ids of the project's findings table; section names are the artic
     (Australian Acoustic Observatory, CC BY 4.0).
   * *Saved outputs bundle*: the research locator outputs for the A2O and public-webcam units, with their truth files
     (published separately; it holds no event or speech unit). It lets you rescore without a GPU.
-  * *ADS-B*: adsb.lol daily releases (ODbL 1.0), fetched by `skyhum adsb fetch` (in a later build of this branch).
+  * *ADS-B*: adsb.lol daily releases (ODbL 1.0), fetched by `skyhum adsb fetch --country`.
   * *Static tables*: `skyhum country static` downloads the US Census CBSA 2023 / county files, the ABS SA4 2021
     boundaries and AWS terrain tiles and builds the region rasters (bit-identical to the research build).
   * *Detector hints*: detector-v3 detections per recording. A rerun needs them; detector inference is being added to
     the package separately.
 * **Third party today.**
   * *Yes (rescore)*: reproducible from the saved outputs bundle, CPU, minutes.
-  * *Yes (rerun)*: also rerunnable from the public recordings once ADS-B fetch, the search and detector-v3 inference
-    are in the build.
+  * *Yes (rerun)*: also rerunnable from the public recordings (`--audio-dir`) with ADS-B fetch and the search in
+    this build; detector-v3 detections are needed per recording (`--hints-dir`) until detector inference ships.
   * *Needs webcam features*: webcam audio is not redistributable. These rows need the webcam derived-feature release
     (public airport and city webcam hours); the commands take its manifest with `--manifest FILE` and its
     spectrograms with `--spec-dir`.
