@@ -56,3 +56,4 @@ dist/
 # shipped models are listed in src/skyhum/models/SHA256SUMS
 !src/skyhum/models/**
 !tests/data/*.npz
+src/skyhum/models/**/__pycache__/
