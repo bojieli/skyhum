@@ -13,12 +13,13 @@ URL, camera, place, start UTC, duration, rows) and the code that writes and read
 
 | set | contents | band | status |
 |---|---|---|---|
-| **3, restricted** (`tonal_400` + `loud_env`) | locator spectrogram rows up to 400 Hz; two 2 s level curves | 29.8-400 Hz; level curves over 25 Hz-6.3 kHz and 50-180 Hz | approved by the owner (2026-11-21); staged |
-| 1, tonal full (`tonal_620`) | the locator spectrogram as it consumes it | 29.8-620 Hz | built for the fidelity check; not planned for upload |
-| 2, loud full (`loud_full` + `loud_events`) | third-octave levels and frame features as the research detector stores them, plus its per-event measurements | 25 Hz-6.3 kHz bands (band edges 22 Hz-7.1 kHz) | built for the fidelity and intelligibility checks; not planned for upload |
+| **3, restricted** (`tonal_400` + `loud_env`) | locator spectrogram rows up to 400 Hz; two 2 s level curves | 29.8-400 Hz; level curves over 25 Hz-6.3 kHz and 50-180 Hz | released (owner, 2026-11-21) |
+| **1, tonal full** (`tonal_620`) | the locator spectrogram as it consumes it | 29.8-620 Hz | released (owner, 2026-11-22) |
+| **2, loud full** (`loud_full`) | third-octave levels and frame features as the research detector stores them | 25 Hz-6.3 kHz bands (band edges 22 Hz-7.1 kHz) | released (owner, 2026-11-22) |
+| 2, per-event measurements (`loud_events`) | the research detector's per-event measurements | – | **not released** (owner, 2026-11-22) |
 
-Only set 3 is meant for publication. Sets 1 and 2 are documented here because the fidelity results below compare
-against them.
+Sets 1, 2 (`loud_full`) and 3 are released as assets of the `v0.2.0-alpha` GitHub release, with per-file
+checksums, a combined `SHA256SUMS` and this card. `loud_events` is not released.
 
 ## Hours
 
@@ -196,7 +197,9 @@ when sound is present and its rough spectral tilt, not which syllables were said
 `modf` / `modh` summarise the 9-40 Hz modulation of one broad band (300-3400 Hz) as one peak per frame. They carry
 no per-band timing. Set 3 is coarser still: two curves smoothed over 2 s.
 
-**Limits.** This is an ASR test, not a listening test. No human listeners were used. An adversary with a better
+**Limits.** What the test covered: automatic speech recognition (faster-whisper `base`) on noise-vocoder
+reconstructions of 10 stretches. What it did not cover: no listening test with people, and no learned
+attacker (for example a speech model trained to invert band levels). This is an ASR test, not a listening test. No human listeners were used. An adversary with a better
 reconstruction (e.g. a learned speech prior conditioned on the 25 band levels) was not tested. The stretches were
 airport radio and narration, not close-talking speech.
 
