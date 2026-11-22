@@ -54,11 +54,14 @@ two speech-quality tests. This is a simulation on recorded audio, not a measurem
 
 ## Limits of this build
 
-- Default matcher r5b: slow on CPU; 20 decoys for verify and 10 for find by default; run without detector hints.
+- Default matcher r5b: slow on CPU; 20 decoys for verify and 10 for find by default; detector v3 hints as in the
+  test (`--hints none` turns them off).
   `--matcher reference`: not benchmarked; 0.5 km cells, coarser for large areas (flagged).
 - Clock windows up to ±30 min.
 - Strict operating point: a fixed margin, not calibrated to a false-accept rate.
 - Terrain: flat ground at `--ground-alt` unless `--dem-dir` points at GeoTIFF tiles.
-- Detector: the classic ridge detector; the learned detector is pending.
+- Detector: detector v3 (needs PyTorch); the classic ridge detector without it. `audit` still counts passes with
+  the classic detector.
+- Loud-event channel: ported as a library (`skyhum.loud`); not in the command line yet.
 - `audit` does not compute exposure tiers yet. `bench fetch`, `bench run`, `adsb fetch` and `--adsb auto` are not
   implemented.

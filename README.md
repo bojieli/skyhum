@@ -3,7 +3,7 @@
 **Does your audio say where you were?**
 
 ![status: alpha](https://img.shields.io/badge/status-alpha-orange)
-![locator: r5b, test partial](https://img.shields.io/badge/locator-r5b%20%C2%B7%20test%20partial-yellow)
+![locator: r5b](https://img.shields.io/badge/locator-r5b-yellow)
 ![find confidence: not calibrated](https://img.shields.io/badge/find%20confidence-not%20calibrated-red)
 ![licence: MIT](https://img.shields.io/badge/licence-MIT-blue)
 
@@ -32,7 +32,9 @@ This is an alpha. The command line, the place grammar, the verdicts, the reports
 shape. `verify`, `audit` and `find` use the round-5b locator from the research code (`--matcher r5b`, the
 default when available). It runs on a GPU when there is one and falls back to the CPU, where it is much slower:
 minutes for a short clip, far longer for an hour of audio. A simplified numpy matcher is kept as
-`--matcher reference` for quick checks; it has not been benchmarked.
+`--matcher reference` for quick checks; it has not been benchmarked. As in the round-5b test, r5b runs get
+detector v3 hints (`--hints auto`, the default: the learned detector runs on the audio first, a few seconds per hour
+on a CPU).
 
 The research models ship in `src/skyhum/models/` (detector v3, the round-5b fitted tables, the loud-event
 classifier) with checksums and a [model card](src/skyhum/models/MODEL_CARD.md) that lists every training source and
@@ -46,7 +48,7 @@ it is never a precision. See [Limits](#limits) and [docs/locator.md](docs/locato
 |---|---|
 | `selftest`, `doctor`, `regions list` | working (`selftest --quick` skips the slow r5b checks) |
 | `scrub` | working: the pause gate and the tone scrubber from the research code, unchanged |
-| `detect` | working, with a classic ridge detector; the learned detector is pending |
+| `detect` | working: detector v3, the learned detector of the research runs (needs PyTorch; CPU is fine); without PyTorch the classic ridge detector (`--detector classic`), and it says so |
 | `verify` | working with r5b (default) or the reference matcher; clock windows up to ±30 min; you supply the ADS-B file |
 | `audit` | working, except the exposure tier, which is not computed yet |
 | `find` | r5b ranking; confidence not calibrated (about 2 in 3 confident answers within 2 km) |
@@ -54,7 +56,7 @@ it is never a precision. See [Limits](#limits) and [docs/locator.md](docs/locato
 | `bench run --reproduce FAMILY` | working for rescoring locator outputs (`--outputs DIR`): families `country`, `prior`, `verify`, `box`, `single-event`, `gate`, `multi-session`; reruns from the A2O recordings need detector-v3 detections (`--hints-dir`). See [REPRODUCING.md](REPRODUCING.md) |
 | `country static / stage / run / score / prior / claims` | working: the region rasters (public Census / ABS files) and the scorers of the whole-country search ([docs/locate.md](docs/locate.md)) |
 | `adsb fetch --country US\|AU` | working: whole adsb.lol days, resumable, cut to the country's low traffic ([docs/locate.md](docs/locate.md)); `--area` and `--adsb auto` are not in this build |
-| `locate --country US\|AU` | working, research command: whole-country search; prints the base rate (about 5 % for one US hour) and its limits; needs detector-v3 detections (`--hints`) until detector inference ships |
+| `locate --country US\|AU` | working, research command: whole-country search; prints the base rate (about 5 % for one US hour) and its limits; needs detector-v3 detections as `--hints` |
 
 Anything not in this build exits with code 2 and says so.
 

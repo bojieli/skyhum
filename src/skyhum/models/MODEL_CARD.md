@@ -41,8 +41,14 @@ case id of the three sets.
   rarely heard); urban noise and music; jets and distant passes; call codecs with discontinuous transmission;
   machinery tones that slide. At the study operating point it caught 34 of 86 relabel-audible passes at three test
   cameras.
-- **In this package.** Shipped for reproduction. Inference code (the v3 front end and network) is being ported;
-  until it lands, `detect` uses the classic ridge detector and r5b runs have no hints (README, "Status").
+- **In this package.** Inference is ported (`skyhum.detect.v3`: front end, network, sliding detection; no training
+  code). The checkpoint loads with `torch.load(weights_only=True)`. `skyhum detect` uses it by default when PyTorch
+  is installed (`--detector classic` otherwise), and the r5b runs of `verify`, `audit` and `find` pass its
+  detections as hints (`--hints auto`, frozen `--hint-pmin 0.8`), as the test did. On the CPU with the same dither
+  seed the port reproduces the research code's detections exactly (maximum difference 0.0 on two A2O test hours,
+  67 and 87 detections, and on the synthetic selftest clips). The research hints were made on a GPU with an
+  unseeded dither, so a CPU rerun differs slightly (32 of 34 detections at p >= 0.8 matched on one hour, 5 of 5
+  on another).
 
 ## 2. Round-5b fitted tables (`r5b/k3_full.json`, `r5b/env_full.json`)
 
@@ -53,7 +59,7 @@ case id of the three sets.
   positive, 3 hard, 96 negative hours (per-recording licences, which may include CC BY-NC-ND); colsto's YouTube
   video (1 positive); 1 public-webcam negative hour (YouTube livestream). Detector v3 hints were inputs.
 - **Evaluation.** split_v2 test, partial (README, "Limits"; docs/locator.md).
-- **Failure modes.** As the locator: no hints means lower recall than the test; the strict threshold is not
+- **Failure modes.** As the locator: running without hints (`--hints none`, or no PyTorch) means lower recall than the test; the strict threshold is not
   calibrated (about 2 in 3 confident answers within 2 km on the 7-cluster test; docs/locator.md).
 
 ## 3. Loud-event classifier (`loud/classifier.npz`, `loud/calibration.json`)
@@ -72,3 +78,9 @@ case id of the three sets.
   livestreams under YouTube's terms. Camera-grouped cross-validation.
 - **Failure modes.** Helicopters at the Red Hook test camera: 0 of 103 detected, and 0 of 37 props; speech and
   radio chatter are gated out, which also drops events under talk.
+- **In this package.** `skyhum.loud` ports the blind event detector (`features`), the speech / ATC gating,
+  `featurize`, the calibrated evidence (`model`) and the known-clock scorer (`locate`), inference only and not yet
+  in the command line. The research evaluation driver (`run_locate.py`: registry, jittered boxes, decoy hours) is not
+  ported. On one A2O hour the port's events, features, probabilities and evidence equal the research code's on the
+  CPU (maximum difference 0.0). `tests/test_loud.py` rebuilds `loud_equiv.npz` from the raw event dicts in
+  `tests/data/loud_events_a2o.json` (numbers only, from A2O audio, CC BY 4.0).

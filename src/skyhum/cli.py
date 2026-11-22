@@ -69,7 +69,7 @@ def _audio_args(p, start_required=True):
 def _matcher_args(p, decoy_default_text):
     m = p.add_argument_group("matcher")
     m.add_argument("--matcher", choices=["auto", "r5b", "reference"], default="auto",
-                   help="r5b: the round-5b locator (test partial; needs PyTorch and its fitted tables, slow on CPU); "
+                   help="r5b: the round-5b locator (confidence not calibrated; needs PyTorch, slow on CPU); "
                         "reference: the simplified numpy matcher (fast, not benchmarked); auto (default): r5b when "
                         "available, otherwise reference with a notice")
     m.add_argument("--decoys", type=int, default=None, metavar="N",
@@ -79,6 +79,10 @@ def _matcher_args(p, decoy_default_text):
     m.add_argument("--dem-dir", metavar="DIR",
                    help="r5b: directory of GeoTIFF terrain tiles (otherwise flat ground at --ground-alt); nothing is "
                         "downloaded")
+    m.add_argument("--hints", default="auto", metavar="auto|none|FILE",
+                   help="r5b: detector hints, as in the round-5b test. auto (default): run detector v3 on the audio; "
+                        "FILE: a JSON list of {t, f, p} (seconds from the start of the audio, Hz, probability), e.g. "
+                        "from `skyhum detect --hints-out`; none: no hints")
 
 
 def build_parser():
@@ -111,10 +115,18 @@ def build_parser():
     p = cmd("regions", "named regions accepted by --claim/--where/--area")
     p.add_argument("action", choices=["list"], help="list the bundled named regions")
 
-    p = cmd("detect", "list aircraft-like tonal passes in the audio (no location involved)",
-            "List aircraft-like tonal passes found in the audio, with an optional spectrogram PNG. Uses the classic "
-            "ridge detector in this build (the learned detector is pending).")
+    p = cmd("detect", "list aircraft fly-overs in the audio (no location involved)",
+            "List aircraft fly-overs found in the audio: closest-approach time, frequency and probability from "
+            "detector v3 (the learned detector of the research runs; needs PyTorch, CPU is enough), or tonal passes "
+            "from the classic ridge detector. Optional spectrogram PNG.")
     _audio_args(p, start_required=False)
+    p.add_argument("--detector", choices=["auto", "v3", "classic"], default="auto",
+                   help="v3: the learned detector; classic: the ridge detector; auto (default): v3 when PyTorch is "
+                        "installed, otherwise classic")
+    p.add_argument("--min-p", type=float, default=0.5, metavar="P",
+                   help="v3: list detections with p >= P (default: 0.5; the locator uses p >= 0.8)")
+    p.add_argument("--hints-out", metavar="FILE",
+                   help="v3: write every detection as a locator hints file (JSON), for --hints FILE")
     p.add_argument("--png", metavar="FILE", help="write the spectrogram with detections to FILE (needs matplotlib)")
 
     p = cmd("verify", "is the audio consistent with a claimed place and time?",
@@ -288,7 +300,10 @@ def finish(args, out, command, result, code):
 
 def matcher_label(r):
     if r.get("matcher") == "r5b":
-        return "r5b round-5b locator (confidence not calibrated)" + (" [--fast]" if r.get("fast") else "")
+        h = r.get("hints")
+        h = h[0] if isinstance(h, list) and h else h
+        hs = f"; {h['n_used']} detector v3 hint(s) at p >= {h['hint_pmin']:g}" if h else "; no detector hints"
+        return "r5b round-5b locator (confidence not calibrated" + hs + ")" + (" [--fast]" if r.get("fast") else "")
     return f"{r.get('matcher')} (simplified, not benchmarked)"
 
 
@@ -336,11 +351,110 @@ def cmd_regions(args, out):
     return finish(args, out, "regions", dict(regions=rows), E.OK)
 
 
+def pick_detector(args, out):
+    from skyhum.detect import v3
+    if args.detector == "auto":
+        if v3.available():
+            return "v3"
+        out.warn("PyTorch or the detector v3 weights are not available: using the classic ridge detector "
+                 "(fallback). pip install torch for detector v3.")
+        return "classic"
+    if args.detector == "v3" and not v3.available():
+        raise E.MissingData("detector v3 needs PyTorch (the CPU build is enough) and its weights; "
+                            "or use --detector classic")
+    return args.detector
+
+
+def _dur(args):
+    from skyhum.io.clock import parse_duration
+    return parse_duration(args.duration) if getattr(args, "duration", None) else None
+
+
+def run_v3(path=None, x=None, fs=None, channel=0, duration_s=None):
+    """Detector v3 on a file (decoded at its own rate, straight to 1 kHz, as in the research runs) or on audio in
+    memory. CPU only."""
+    from skyhum.detect import v3
+    d = v3.shared("cpu")
+    if path is not None:
+        return d.detect_1k(v3.load_1k(path, channel=channel, duration_s=duration_s))
+    return d.detect(x, fs)
+
+
+def load_hints(path):
+    import json
+    try:
+        H = json.load(open(path))
+    except (OSError, ValueError) as e:
+        raise E.UsageError(f"--hints {path}: {e}") from None
+    if not isinstance(H, list) or not all(isinstance(h, dict) and "t" in h and "f" in h for h in H):
+        raise E.UsageError(f"--hints {path}: expected a JSON list of {{t, f, p}} objects")
+    return H
+
+
+def hints_for(args, out, path=None, x=None, fs=None):
+    """Detector hints for one recording, or None (--hints none, or detector v3 unavailable)."""
+    from skyhum.detect import v3
+    h = getattr(args, "hints", "none")
+    if h == "none":
+        return None
+    if h != "auto":
+        return load_hints(h)
+    if not v3.available():
+        out.warn("detector v3 is not available (PyTorch or weights missing): r5b runs without hints")
+        args.hints = "none"
+        return None
+    return run_v3(path=path, x=x, fs=fs, channel=args.channel, duration_s=_dur(args) if path else None)
+
+
 def cmd_detect(args, out):
+    check_device(args, out)
+    if pick_detector(args, out) == "v3":
+        return _detect_v3(args, out)
+    return _detect_classic(args, out)
+
+
+def _detect_v3(args, out):
+    import json
+
+    from skyhum.detect import v3
+    from skyhum.detect.spectrogram import logspec
+    from skyhum.io.clock import hms
+    x, info, start, _ = load_clock_audio(args, out, need_start=False)
+    dets = run_v3(path=args.audio, channel=args.channel, duration_s=_dur(args))
+    if start is not None:
+        for d in dets:
+            d["t_utc"] = start + d["t"]
+    if args.hints_out:
+        with open(args.hints_out, "w") as f:
+            json.dump([{k: v for k, v in d.items() if k != "t_utc"} for d in dets], f, indent=0)
+    png = args.png or (os.path.join(args.out, "spectrogram.png") if args.out else None)
+    if png:
+        try:
+            if args.out:
+                os.makedirs(args.out, exist_ok=True)
+            v3.plot(logspec(x, 16000), dets, png, title=os.path.basename(args.audio), pmin=args.min_p)
+        except ImportError:
+            out.warn("matplotlib is not installed: no PNG written (pip install 'skyhum[plot]')")
+            png = None
+    out.line(f"detect  {os.path.basename(args.audio)}  ({info['duration_s']:.0f} s, detector v3)")
+    shown = sorted([d for d in dets if d["p"] >= args.min_p], key=lambda d: d["t"])
+    for d in shown:
+        when = f"{d['t']:7.0f} s" + (f"  {hms(d['t_utc'])}" if "t_utc" in d else "")
+        out.line(f"  {when}  {d['f']:6.1f} Hz  p {d['p']:.2f}  v {d['v']:4.0f} m/s  d {d['d']:5.0f} m")
+    n_hint = sum(d["p"] >= v3.HINT_PMIN for d in dets)
+    out.result(f"{n_hint} fly-over(s) at p >= {v3.HINT_PMIN:g}, {len(shown)} at p >= {args.min_p:g} (detector v3)"
+               + (f"; hints {args.hints_out}" if args.hints_out else "") + (f"; spectrogram {png}" if png else ""))
+    r = dict(audio=info, detector="v3", hint_pmin=v3.HINT_PMIN, min_p=args.min_p, n_hint=n_hint, detections=dets,
+             hints_out=args.hints_out, png=png, start=start)
+    return finish(args, out, "detect", r, E.OK)
+
+
+def _detect_classic(args, out):
     from skyhum.detect import tonal
     from skyhum.detect.spectrogram import logspec
     from skyhum.io.clock import hms
-    check_device(args, out)
+    if args.hints_out:
+        raise E.UsageError("--hints-out needs detector v3")
     x, info, start, _ = load_clock_audio(args, out, need_start=False)
     spec = logspec(x, 16000)
     passes = tonal.detect(spec, t0=start)
@@ -353,7 +467,8 @@ def cmd_detect(args, out):
         except ImportError:
             out.warn("matplotlib is not installed: no PNG written (pip install 'skyhum[plot]')")
             png = None
-    out.line(f"detect  {os.path.basename(args.audio)}  ({info['duration_s']:.0f} s, detector {tonal.NAME})")
+    out.line(f"detect  {os.path.basename(args.audio)}  ({info['duration_s']:.0f} s, detector {tonal.NAME}"
+             + (", fallback without PyTorch" if args.detector == "auto" else "") + ")")
     for p in passes:
         when = f"{p['cpa_s']:7.0f} s" + (f"  {hms(p['cpa_utc'])}" if "cpa_utc" in p else "")
         out.line(f"  {when}  {p['kind']:<12} {p['f_start_hz']:6.1f} -> {p['f_end_hz']:6.1f} Hz  "
@@ -388,18 +503,22 @@ def _verify_human(out, args, r, claim_label):
         out.line("UNCORROBORATED is not evidence that the claim is false.")
 
 
-def _verifier(args, out, x, tracks, lo, hi, versus=None):
-    """Return verify_fn(area) for the chosen matcher."""
+def _verifier(args, out, x, tracks, lo, hi, versus=None, audio_path=None):
+    """Return verify_fn(area) for the chosen matcher. audio_path: the file x came from (detector hints are computed
+    from the file, as in the research runs); None computes them from x."""
     if need_r5b(args):
         from skyhum.score import r5b_rule as R
         nd = n_decoys(args, R.DEFAULT_DECOYS)
         if not args.fast:
             out.warn(f"r5b on {os.environ.get('SKYHUM_DEVICE', 'auto')}: one locator run per decoy ({nd}); on a CPU "
                      "this can take a long time")
+        hints = hints_for(args, out, path=audio_path, x=x, fs=16000)
         return lambda area: R.verify(x, 16000, tracks, area, lo, hi, versus=versus,
                                      operating_point=getattr(args, "operating_point", "default"), n_decoys=nd,
                                      seed=args.seed, fast=args.fast, ground_m=args.ground_alt, dem_dir=args.dem_dir,
-                                     progress=out.progress("decoy runs"))
+                                     progress=out.progress("decoy runs"), hints=hints)
+    if getattr(args, "hints", "auto") not in ("auto", "none"):
+        raise E.UsageError("--hints FILE is for the r5b locator; the reference matcher takes no hints")
     from skyhum.detect.spectrogram import logspec
     from skyhum.score import verify as V
     nd = n_decoys(args, 200)
@@ -418,7 +537,7 @@ def cmd_verify(args, out):
     versus = parse_place(args.versus) if args.versus else None
     tracks = Tracks(args.adsb)
     x, info, start, (lo, hi) = load_clock_audio(args, out)
-    r = _verifier(args, out, x, tracks, lo, hi, versus)(claim)
+    r = _verifier(args, out, x, tracks, lo, hi, versus, audio_path=args.audio)(claim)
     r["audio"] = info
     _verify_human(out, args, r, claim.label)
     if out.quiet:
@@ -436,12 +555,15 @@ def cmd_audit(args, out):
     where = parse_place(args.where)
     tracks = Tracks(args.adsb)
     x, info, start, (lo, hi) = load_clock_audio(args, out)
-    r = audit.run(_verifier(args, out, x, tracks, lo, hi), tonal.detect(logspec(x, 16000), t0=start), where)
+    r = audit.run(_verifier(args, out, x, tracks, lo, hi, audio_path=args.audio),
+                  tonal.detect(logspec(x, 16000), t0=start), where)
     r["audio"] = info
     if args.scrub:
         y, sinfo = _scrub(x, args.method, 400.0, args.seed)
         from skyhum.io.audio import save
         save(args.scrub, y)
+        if args.hints not in ("auto", "none"):
+            raise E.UsageError("--hints FILE describes the original audio; use --hints auto with --scrub")
         after = audit.run(_verifier(args, out, y, tracks, lo, hi), tonal.detect(logspec(y, 16000), t0=start), where)
         r["scrubbed"] = dict(method=args.method, output=args.scrub, scrub_info=sinfo,
                              detected=after["detected"], true_claim=after["true_claim"],
@@ -509,6 +631,7 @@ def cmd_find(args, out):
     tracks = Tracks(args.adsb)
     x, info, start, (lo, hi) = load_clock_audio(args, out)
     sessions = [(x, lo, hi)]
+    paths = [args.audio]
     if args.sessions:
         extra = [s for s in args.sessions.split(",") if s]
         starts = [s for s in (args.session_starts or "").split(",") if s]
@@ -518,6 +641,7 @@ def cmd_find(args, out):
         for pth, st in zip(extra, starts):
             xs, _ = A.load(pth, channel=args.channel, duration_s=dur)
             sessions.append((xs, *parse_tolerance(args.start_tol, parse_start(st, args.tz))))
+            paths.append(pth)
     need_r5b(args)
     if args.single_event:
         if args.matcher != "r5b":
@@ -527,10 +651,16 @@ def cmd_find(args, out):
     if need_r5b(args):
         from skyhum.score import r5b_rule as R
         out.warn("find: " + R.NOT_VALIDATED)
+        if args.hints not in ("auto", "none") and len(sessions) > 1:
+            raise E.UsageError("--hints FILE covers one recording; use --hints auto with --sessions")
+        hints = [hints_for(args, out, path=p) for p in paths]
         r = R.find([(xs, 16000, l, h) for xs, l, h in sessions], tracks, area, top=args.top,
                    n_decoys=n_decoys(args, 10), seed=args.seed, fast=args.fast, single_event=args.single_event,
-                   ground_m=args.ground_alt, dem_dir=args.dem_dir, progress=out.progress("decoy runs"))
+                   ground_m=args.ground_alt, dem_dir=args.dem_dir, progress=out.progress("decoy runs"),
+                   hints=None if all(h is None for h in hints) else hints)
     else:
+        if args.hints not in ("auto", "none"):
+            raise E.UsageError("--hints FILE is for the r5b locator; the reference matcher takes no hints")
         from skyhum.detect.spectrogram import logspec
         from skyhum.score import find as F
         r = F.run([(logspec(xs, 16000), l, h) for xs, l, h in sessions], tracks, area, top=args.top,

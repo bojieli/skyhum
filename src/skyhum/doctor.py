@@ -60,8 +60,16 @@ def run(device="auto", workdir=None):
     cache = os.path.expanduser("~/.cache/skyhum/adsb")
     n = len(os.listdir(cache)) if os.path.isdir(cache) else 0
     add("adsb cache", "info", f"{cache}: {n} file(s); automatic download is not in this build (pass --adsb PATH)")
-    add("detector weights", "info", "none needed: this build uses the classic ridge detector; the learned "
-                                    "detector is pending")
+    from skyhum.detect import v3
+    from skyhum.detect.v3.net import weights_path
+    if not os.path.isfile(weights_path()):
+        add("detector weights", "warn", f"detector v3 weights missing ({weights_path()}): detect falls back to the "
+                                        "classic ridge detector and r5b runs get no hints")
+    elif not v3.available():
+        add("detector weights", "info", "detector v3 shipped; needs PyTorch (detect uses the classic ridge detector "
+                                        "until then)")
+    else:
+        add("detector weights", "ok", "detector v3 (detect, and hints for r5b runs)")
     if workdir:
         add("workdir", "ok" if os.access(os.path.dirname(os.path.abspath(workdir)) or ".", os.W_OK) else "warn",
             workdir)

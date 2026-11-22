@@ -50,6 +50,7 @@ def test_r5b_verify_true_and_displaced(run_cli, demo):
     code, out, _ = run_cli(*base, "--claim", f"{SITE},r=2km")
     r = json.loads(out)["result"]
     assert code == 0 and r["matcher"] == "r5b" and r["verdict"] == "SUPPORTED" and r["passes"]
+    assert r["hints"]["detector"] == "v3" and r["hints"]["n_used"] >= 2          # detector v3 hints, as in the test
     assert "not calibrated" in r["note"]
     code, out, _ = run_cli(*base, "--claim", "34.05,-118.10,r=2km")
     assert code in (10, 11)

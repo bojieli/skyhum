@@ -52,5 +52,8 @@ own licence on its original host:
 
 ## Detector weights
 
-None in this build. The classic ridge detector needs no weights. When the learned detector ships, its weights will
-be downloaded on first use and checked against a pinned sha256; they will never be stored in git.
+They ship in the package (`src/skyhum/models/`, checksums in `SHA256SUMS`, sources and licences in the
+[model card](../src/skyhum/models/MODEL_CARD.md)): detector v3 (`v3/ckpt.pt`, a plain state dict loaded with
+`torch.load(weights_only=True)`), the round-5b tables and the loud-event classifier (numpy arrays, no pickle).
+Nothing is downloaded. The classic ridge detector needs no weights. `SKYHUM_V3_MODEL` points at another directory
+holding `ckpt.pt`.
