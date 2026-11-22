@@ -7,7 +7,7 @@ seconds, which region of a whole country explains the aircraft passes in it? Reg
 
 **Base rate.** In the published benchmark the correct US region was ranked first for about 5 % of one-hour
 recordings (15/327, sound only, clock known to ±5 s); Australian rural sensors 37/139 hours. **No answer is
-validated** as correct for a new recording, and the confidence of the round-5b locator is not validated. The country
+validated** as correct for a new recording, and the confidence of the round-5b locator is not calibrated (about 2 in 3 confident answers within 2 km on a 7-cluster test). The country
 search is an explicit research command; `verify` and `audit` stay the front door for everyone else. For research,
 validation and defence; not for locating private individuals.
 
@@ -42,7 +42,12 @@ the top region beats every decoy (8 clock shifts and, by default, the same time 
 need their ADS-B files too), the base rate and the limits. `--sessions`, `--session-starts` and `--session-hints` add
 recordings you state come from the same place; they are searched jointly. `--report FILE` writes the full output.
 
-On a GPU a one-hour recording takes minutes; on a CPU, hours (see the measured ratio below).
+On a GPU a one-hour recording takes minutes; on a CPU, hours. Measured on one saved research group (one 1.8 h
+recording, one detection): the whole group (calibration and 11 traffic variants) took 21.5 s of search time on a data-
+centre GPU; on a shared, heavily loaded 32-core CPU at the lowest priority the calibration took 4.0 h and the real
+variant another 4.0 h. That CPU run gave the same ranked regions and best points as the GPU output in all 12 ranked
+lists, with scores equal to their 3-decimal rounding. Rescoring saved outputs (`skyhum bench run --reproduce ...
+--outputs`) is the practical CPU path.
 
 ## ADS-B days
 

@@ -9,8 +9,9 @@ from skyhum import errors as E
 BASE_RATE = ("Base rate: in the published benchmark the correct US region was ranked first for about 5 % of one-hour "
              "recordings (15/327, sound only, clock known to +-5 s; 7/110 for webcams); for Australian rural sensors "
              "37/139 hours.")
-LIMITS = ("Limits: no answer is validated as correct. The decoy rule below is the research confidence rule; the "
-          "confidence of the round-5b locator is not validated. Outdoor public recordings only; ordinary indoor or "
+LIMITS = ("Limits: no answer is validated as correct. The decoy rule below is the research confidence rule; its "
+          "confidence is not calibrated (round-5b test: about 2 in 3 confident answers within 2 km on a 7-cluster "
+          "test). Outdoor public recordings only; ordinary indoor or "
           "phone callers were not measured. For research, validation and defence; not for locating private "
           "individuals.")
 
