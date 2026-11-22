@@ -50,7 +50,7 @@ def test_r5b_verify_true_and_displaced(run_cli, demo):
     code, out, _ = run_cli(*base, "--claim", f"{SITE},r=2km")
     r = json.loads(out)["result"]
     assert code == 0 and r["matcher"] == "r5b" and r["verdict"] == "SUPPORTED" and r["passes"]
-    assert "not validated" in r["note"]
+    assert "not calibrated" in r["note"]
     code, out, _ = run_cli(*base, "--claim", "34.05,-118.10,r=2km")
     assert code in (10, 11)
 
@@ -59,6 +59,6 @@ def test_r5b_verify_true_and_displaced(run_cli, demo):
 def test_r5b_find_gate_and_output(run_cli, demo):
     code, out, err = run_cli("find", fx(demo, "clip.wav"), "--adsb", fx(demo, "tracks.npz"), "--start", START,
                              "--area", f"{SITE},r=3km", "--fast", "--decoys", "5")
-    assert code in (0, 10) and "not validated" in out + err
+    assert code in (0, 10) and "not calibrated" in out + err
     if code == 10:
         assert "no point estimate" in out
