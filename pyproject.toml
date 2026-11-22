@@ -29,6 +29,7 @@ plot = ["matplotlib>=3.6"]
 locator = ["torch>=2.1"]   # the r5b locator (default matcher); the CPU build is enough
 gpu = ["torch>=2.1"]
 dev = ["pytest>=7", "ruff>=0.4"]
+country = ["timezonefinder>=6", "pyshp>=2.3", "rasterio>=1.3", "Pillow>=9"]   # prior / claims tables, static build
 
 [project.scripts]
 skyhum = "skyhum.cli:main"
@@ -40,7 +41,7 @@ version = { attr = "skyhum.__version__" }
 where = ["src"]
 
 [tool.setuptools.package-data]
-skyhum = ["data/*.json", "_vendor/afg/LICENSE", "models/SHA256SUMS", "models/*.md", "models/*/*"]
+skyhum = ["data/*.json", "country/data/*.csv", "bench/manifests/*.json", "_vendor/afg/LICENSE", "models/SHA256SUMS", "models/*.md", "models/*/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

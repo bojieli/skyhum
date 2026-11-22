@@ -24,13 +24,30 @@ Rules for the catalogues (applied before the first public release):
 - Video sources are listed by id and time. Nothing is re-hosted.
 - Entries that identify a private home or a private person are removed.
 
-## Tiers
+## Manifests
 
-`bench run` (not in this build) will report, for any set of recordings, the share located within 100 m, 300 m,
-1, 2, 5 and 10 km, and the share placed in the right metro within 25, 50 and 100 km, always with n.
-`bench run --reproduce paper` will re-derive the published tables from saved results.
+`src/skyhum/bench/manifests/` holds the public A2O manifests (links and metadata only, CC BY 4.0 recordings):
+`a2o_country_v1.json` (139 one-hour sensor recordings of the whole-country benchmark, 13 same-sensor groups) and
+`a2o_box_v1.json` (76 A2O hours of the held-out box test). Event and speech livestream items are in no public
+manifest. Webcam rows need the webcam derived-feature release.
+
+## Reproducing published rows
+
+`skyhum bench run --reproduce FAMILY --outputs DIR ...` rescores locator outputs (yours, or the published saved
+outputs) and writes the tables under `WORKDIR/reproduce/`. [REPRODUCING.md](../REPRODUCING.md) maps every published
+row to its family, inputs and the number to compare against.
+
+| Family | Rows | Inputs |
+|---|---|---|
+| `country` | region top-1, tiers, decoy confidence, multi-session | `--outputs`, `--truth`, static tables |
+| `prior` | population / UTC-offset prior, the sound given a prior | same; needs timezonefinder |
+| `verify` | verifying a claimed place | same; needs timezonefinder |
+| `box` | round-5b in a jittered box, three clocks | `--outputs`, `--cases`, `--tag`, `--ref-tag` |
+| `single-event` | two-point single-event answers with decoys | `--outputs`, `--cases`, `--tag` |
+| `gate` | decoy-gate calibration (p <= 0.05 and margins), main test and single event | `--outputs`, `--cases` |
+| `multi-session` | same-sensor sets of N hours on a shared box | `--outputs`, `--plan` |
 
 ## Status
 
-`bench list` works. `bench fetch` and `bench run` exit with code 2 in this build: the catalogue licence review
-(which entries can be listed, and which labels can be published) comes first.
+`bench list` and `bench run --reproduce` (rescoring) work. `bench fetch` exits with code 2: recordings are
+downloaded from each manifest url by you.

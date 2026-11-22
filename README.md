@@ -15,7 +15,7 @@ calls leak and check whether a fix works.
 - **Audit**: you know where you were; how much did the audio give away, and does scrubbing help?
 - **Scrub**: remove the clue before you share.
 - **Find**: rank places inside an area you supply (research and validation).
-- **Locate** (`skyhum locate --country US|AU`, coming in this release series): the whole-country search used for the write-up, so every number can be checked. Not the default.
+- **Locate** (`skyhum locate --country US|AU`, in this build; base rate about 5 % right region for one US hour): the whole-country search used for the write-up, so every number can be checked. Not the default.
 
 It runs locally. Audio never leaves your machine.
 
@@ -50,8 +50,11 @@ it is never a precision. See [Limits](#limits) and [docs/locator.md](docs/locato
 | `verify` | working with r5b (default) or the reference matcher; clock windows up to ±30 min; you supply the ADS-B file |
 | `audit` | working, except the exposure tier, which is not computed yet |
 | `find` | r5b ranking; confidence not calibrated (about 2 in 3 confident answers within 2 km) |
-| `bench list` | working; `bench fetch` and `bench run` are not in this build |
-| `adsb fetch`, `--adsb auto` | not in this build: download ADS-B days yourself ([docs/data.md](docs/data.md)) |
+| `bench list` | working; `bench fetch` is not in this build |
+| `bench run --reproduce FAMILY` | working for rescoring locator outputs (`--outputs DIR`): families `country`, `prior`, `verify`, `box`, `single-event`, `gate`, `multi-session`; reruns from the A2O recordings need detector-v3 detections (`--hints-dir`). See [REPRODUCING.md](REPRODUCING.md) |
+| `country static / stage / run / score / prior / claims` | working: the region rasters (public Census / ABS files) and the scorers of the whole-country search ([docs/locate.md](docs/locate.md)) |
+| `adsb fetch --country US\|AU` | working: whole adsb.lol days, resumable, cut to the country's low traffic ([docs/locate.md](docs/locate.md)); `--area` and `--adsb auto` are not in this build |
+| `locate --country US\|AU` | working, research command: whole-country search; prints the base rate (about 5 % for one US hour) and its limits; needs detector-v3 detections (`--hints`) until detector inference ships |
 
 Anything not in this build exits with code 2 and says so.
 
