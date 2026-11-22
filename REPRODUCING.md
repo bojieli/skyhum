@@ -37,8 +37,8 @@ V, ...) are the ids of the project's findings table; section names are the artic
   country, loud-channel, call, box, decoy, single-event and multi-session runs, with truth files and cases, plus the
   6 xeno-canto items of the box test (public recordings); no event or speech item.
 * **Runtime** is measured from the research run logs (sum of per-group search time on one data-centre GPU) unless
-  marked *est.*. Rescoring takes CPU minutes. CPU searches are much slower than GPU ones; docs/locate.md gives the
-  measured CPU/GPU ratio for one group.
+  marked *est.*. Rescoring takes CPU minutes. CPU searches are far slower than GPU ones (one group: 21.5 s on a GPU,
+  about 8 h for calibration plus one of its 11 variants on a loaded CPU; docs/locate.md).
 
 ## Rows that include event and speech items (not third-party reproducible)
 
